@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openagri_benchmark"
+version = "1.0.0"
+description = "OpenAgri Benchmarking and evaluation tools"
+authors = [
+    { name = "Felipe Arruda", email = "felipe.arrudapontes@maastrichtuniversity.nl" }
+]
+dependencies = [
+    "python-decouple==3.8",
+    "logzero==1.7.0",
+    "requests==2.32.5",
+    "pandas==2.3.3",
+#    "numpy==2.3.4",
+    "fastapi==0.129.0",
+    "SQLAlchemy==2.0.46",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build",     # For building the package
+#    "twine",      # For uploading to PyPI
+    "ipdb",      # For debugging
+]
+
+[tool.setuptools]
+packages = ["openagri_benchmark"]
