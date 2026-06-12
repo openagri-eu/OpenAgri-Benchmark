@@ -9,6 +9,7 @@ A set of toolkits to perform reproducible experiments and evaluations of the per
 * Inside `./openagri_benchmark` is where all the code lives, and where entry point for running any evaluation is: `./openagri_benchmark/cli.py`.
 * Inside `./openagri_benchmark/evaluations` you will find all available evaluators, include the `base.py` containing the `BaseEvaluator`, which you can inherity to create your own evaluator.
 * Inside `./outputs` will you find the directory that is created for every evaluation execution separabed by their id, timestamp and the optional postfix string.
+* In the `./bootstrapconfs` directory you will the specific configurations necessary to setup different bootstrap environments as a reference.
 
 ## Setup
 Before running make sure to use use Python 3.10.12 or above. Also, you should use a venv when doing this.
@@ -65,6 +66,10 @@ You will then be able to call this new evaluation by using the cli.py:
 `python3 openagri_benchmark/cli.py my_eval`
 
 For more informations, see the example of the [simple_eval.py](./openagri_benchmark/evaluations/simple_eval.py)
+
+# OpenAgri Bootstrap Configurations
+To use the reference setup from the `bootstrapconfs` you just need to copy the contents of a given setup directory inside a newly cloned OpenAgri Bootstrap repository. This will give you a preconfigured bootstrap repository for the specific scenario. After this, you will only need to start the services before running your evaluations, and stop/remove them afterwards.
+Some setups might require you to change the IP addresses (i.e., ) inside the `.env` for the boostrapconf as well as the `.env` for the OpenAgri Benchmark tools.
 
 
 # License

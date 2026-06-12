@@ -7,13 +7,11 @@ import shutil
 
 from openagri_benchmark.conf import (
     OUTPUTS_DIR,
-    SANDBOX_DIR,
     LOGGING_LEVEL,
     GATEKEEPER_ADMIN_USER,
     GATEKEEPER_ADMIN_PASSWORD,
 )
 from openagri_benchmark.logger import setup_logging
-from openagri_benchmark.evaluations import BaseEvaluator
 
 
 class BenchmarkController(object):

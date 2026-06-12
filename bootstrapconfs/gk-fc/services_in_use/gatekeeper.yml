@@ -1,0 +1,73 @@
+services:
+  gatekeeper_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${GATEKEEPER_DB_NAME}
+      MYSQL_USER: ${GATEKEEPER_DB_USER}
+      MYSQL_PASSWORD: ${GATEKEEPER_DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${GATEKEEPER_DB_PASS}
+    command:
+      - --innodb_buffer_pool_size=128M
+      - --innodb_log_file_size=64M
+      - --max_connections=25
+      - --table_open_cache=200
+      - --tmp_table_size=16M
+      - --max_heap_table_size=16M
+      - --performance_schema=OFF
+      - --skip-name-resolve
+      - --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+#    mem_limit: 256m
+    restart: always
+    volumes:
+      - gatekeeper_db_data:/var/lib/mysql
+
+  gatekeeper:
+    image: ghcr.io/openagri-eu/openagri-gatekeeper:latest
+    environment:
+      - DATABASE_URL=mysql://${GATEKEEPER_DB_USER}:${GATEKEEPER_DB_PASS}@gatekeeper_db:3306/${GATEKEEPER_DB_NAME}
+      - MAINTENANCE_MODE=${MAINTENANCE_MODE}
+      - APP_HOST=${GATEKEEPER_APP_HOST}
+      - APP_PORT=${GATEKEEPER_APP_PORT}
+      - DJANGO_PORT=${GATEKEEPER_APP_PORT}
+      - DJANGO_SECRET_KEY=${GATEKEEPER_DJANGO_SECRET_KEY}
+      - SUPERUSER_USERNAME=${GATEKEEPER_SUPERUSER_USERNAME}
+      - SUPERUSER_EMAIL=${GATEKEEPER_SUPERUSER_EMAIL}
+      - SUPERUSER_PASSWORD=${GATEKEEPER_SUPERUSER_PASSWORD}
+      - JWT_SIGNING_KEY=${JWT_SIGNING_KEY}
+      - JWT_ACCESS_TOKEN_MINUTES=${JWT_ACCESS_TOKEN_MINUTES}
+      - JWT_REFRESH_TOKEN_DAYS=${JWT_REFRESH_TOKEN_DAYS}
+      - FARM_CALENDAR_API=${GATEKEEPER_FARM_CALENDAR_API}
+      - FARM_CALENDAR_POST_AUTH=${GATEKEEPER_FARM_CALENDAR_POST_AUTH}
+      - EXTRA_ALLOWED_HOSTS=${EXTRA_ALLOWED_HOSTS}
+      - NO_PROXY=${DEFAULT_NO_PROXY},gatekeeper_db
+      - DJANGO_DEBUG=${GATEKEEPER_DJANGO_DEBUG}
+      - INTERNAL_GK_URL=${INTERNAL_GK_URL}
+      - DJANGO_STATIC_ROOT=${GATEKEEPER_DJANGO_STATIC_ROOT}
+      - LOGIN_THROTTLE_ATTEMPTS=${LOGIN_THROTTLE_ATTEMPTS}
+      - LOGIN_THROTTLE_WINDOW_SECONDS=${LOGIN_THROTTLE_WINDOW_SECONDS}
+    depends_on:
+      gatekeeper_db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://gatekeeper:8001/healthz || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+#    mem_limit: 512m
+    restart: always
+    volumes:
+      - gatekeeper_static:/static
+      - gatekeeper_media:/media
+      - gatekeeper_assets:/assets
+
+volumes:
+  gatekeeper_db_data:
+  gatekeeper_static:
+  gatekeeper_media:
+  gatekeeper_assets:

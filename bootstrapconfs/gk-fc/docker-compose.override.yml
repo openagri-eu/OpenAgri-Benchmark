@@ -1,0 +1,9 @@
+services:
+
+    gatekeeper:
+        ports:
+            - "${GATEKEEPER_APP_PORT}:${GATEKEEPER_APP_PORT}"
+
+    farmcalendar:
+        ports:
+            - "${FARM_CALENDAR_APP_PORT}:${FARM_CALENDAR_APP_PORT}"
