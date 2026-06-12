@@ -4,9 +4,18 @@ from decouple import config
 
 SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SOURCE_DIR)
-SANDBOX_DIR = os.path.join(PROJECT_ROOT, 'sandbox')
+DEFAULT_OUTPUTS_DIR = os.path.join(PROJECT_ROOT, 'outputs')
 
 
-print(f"SOURCE_DIR: {SOURCE_DIR}")
-print(f"PROJECT_ROOT: {PROJECT_ROOT}")
+
+
+OUTPUTS_DIR = config('OUTPUTS_DIR', default=DEFAULT_OUTPUTS_DIR)
+GATEKEEPER_BASE_URL = config('LOGGING_LEVEL', default='http://localhost:8001')
+GATEKEEPER_PROXY_BASE = f'{GATEKEEPER_BASE_URL}/api/proxy/'
+LOGIN_URL = f"{GATEKEEPER_BASE_URL}/api/login/"
+
+GATEKEEPER_ADMIN_USER = config('GATEKEEPER_ADMIN_USER', default='admin')
+GATEKEEPER_ADMIN_PASSWORD = config('GATEKEEPER_ADMIN_PASSWORD', default='admin')
+
+
 LOGGING_LEVEL = config('LOGGING_LEVEL', default='DEBUG')
