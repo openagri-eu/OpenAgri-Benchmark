@@ -2,7 +2,7 @@
 🇪🇺 *"This repository was created in the context of OpenAgri project (https://horizon-openagri.eu/). OpenAgri has received funding from the EU’s Horizon Europe research and innovation programme under Grant Agreement no. 101134083."*
 
 
-A set of toolkits and to perform reproducible experiments and evaluations of the performance of the OpenAgri ecosystem of services.
+A set of toolkits to perform reproducible experiments and evaluations of the performance of the OpenAgri ecosystem of services.
 
 ## Repository Structure
 
