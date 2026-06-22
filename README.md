@@ -24,7 +24,7 @@ All the commands for evaluation of the reproducible experiments are to be execut
 ### Setting up Configurations (.env file)
 You'll need to setup the environment variables in order to connect with an existing running setup of OpenAgri Bootstrap: First copy the `example.env` file into a new file called `.env`, and replace the values according to the location, and admin user details of your OpenAgri Bootstrap configuration.
 
-You may also change the OUTPUTS_DIR to the full path of any directory in your machine. By defaul this will be set to the `./outputs` directory inside the repository.
+You may also change the `OUTPUTS_DIR` to the full path of any directory in your machine. By defaul this will be set to the `./outputs` directory inside the repository.
 
 ## Running
 A simple CLI is available to run one of the existing evaluations within the linked OpenAgri Bootstrap setup (environment variables): `openagri_benchmark/cli.py`.

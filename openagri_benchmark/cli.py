@@ -2,12 +2,15 @@
 import sys
 import json
 
+from openagri_benchmark.conf import BOOTSTRAP_DIR
+
 from openagri_benchmark.controller import BenchmarkController
 
 def run(evaluation_name, postfix, force_reset_output):
     bmc = BenchmarkController(
         evaluation_name=evaluation_name,
         postfix=postfix,
+        bootstrap_dir=BOOTSTRAP_DIR,
         force_reset_output=force_reset_output
     )
     print(json.dumps(bmc.run(), indent=4))

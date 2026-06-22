@@ -7,7 +7,9 @@ PROJECT_ROOT = os.path.dirname(SOURCE_DIR)
 DEFAULT_OUTPUTS_DIR = os.path.join(PROJECT_ROOT, 'outputs')
 
 
+WAIT_SECONDS_AFTER_UP = config('WAIT_SECONDS_AFTER_UP', default=10, cast=int)
 
+BOOTSTRAP_DIR = config('BOOTSTRAP_DIR', default=None)
 
 OUTPUTS_DIR = config('OUTPUTS_DIR', default=DEFAULT_OUTPUTS_DIR)
 GATEKEEPER_BASE_URL = config('LOGGING_LEVEL', default='http://localhost:8001')
