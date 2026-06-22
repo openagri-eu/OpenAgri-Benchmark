@@ -7,8 +7,9 @@ from openagri_benchmark.conf import LOGIN_URL
 
 
 class BaseEvaluator():
-    def __init__(self, logger, output_dir, admin_user, admin_pass):
+    def __init__(self, logger, setup_id, output_dir, admin_user, admin_pass):
         self.logger = logger
+        self.setup_id = setup_id
         self.output_dir = output_dir
         self.admin_user = admin_user
         self.admin_pass = admin_pass
@@ -38,5 +39,6 @@ class BaseEvaluator():
 
     def run(self):
         output = {
+            'id': self.setup_id
         }
         return output

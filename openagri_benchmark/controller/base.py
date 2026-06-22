@@ -47,7 +47,7 @@ class BenchmarkController(object):
         stats_file = os.path.join(self.output_dir, 'container_stats.log')
         stats_script = os.path.join(self.bootstrap_dir, 'run_compose.py')
         self.stats_process = subprocess.Popen(
-            ['python3', stats_script, 'stats'],
+            ['python3', stats_script, 'stats', '--format', 'json'],
             cwd=self.bootstrap_dir,
             stdout=open(stats_file, 'w'),
             stderr=subprocess.STDOUT
@@ -83,6 +83,7 @@ class BenchmarkController(object):
         evaluator_cls = getattr(eval_module, 'evaluator')
         evaluator = evaluator_cls(
             logger=self.logger,
+            setup_id=self.setup_id,
             output_dir=self.output_dir,
             admin_user=GATEKEEPER_ADMIN_USER,
             admin_pass=GATEKEEPER_ADMIN_PASSWORD

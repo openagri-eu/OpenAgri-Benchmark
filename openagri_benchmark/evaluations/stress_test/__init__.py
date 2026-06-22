@@ -20,7 +20,7 @@ class StressTestEval(FCStressTestMixin, BaseEvaluator):
         self.logger.info(f"Logged in successfully: Access: {access}. Refresh {refresh}")
         self.base_headers['Authorization'] = f'Bearer {access}'
 
-        farms = self.task_retrieve_fc_farm_list()
+        fc_results = self.fc_tasks()
 
         output.update({
             'farms': farms,
