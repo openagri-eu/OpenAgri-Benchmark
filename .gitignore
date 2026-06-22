@@ -221,3 +221,4 @@ __marimo__/
 
 openagri_benchmark.egg-info
 outputs/*
+boostrap_sandbox/*
