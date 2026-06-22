@@ -7,7 +7,8 @@ PROJECT_ROOT = os.path.dirname(SOURCE_DIR)
 DEFAULT_OUTPUTS_DIR = os.path.join(PROJECT_ROOT, 'outputs')
 
 
-WAIT_SECONDS_AFTER_UP = config('WAIT_SECONDS_AFTER_UP', default=3, cast=int)
+WAIT_SECONDS_AFTER_UP = config('WAIT_SECONDS_AFTER_UP', default=10, cast=int)
+STATS_INTERVAL_SECONDS = config('STATS_INTERVAL_SECONDS', default=2, cast=int)
 
 BOOTSTRAP_DIR = config('BOOTSTRAP_DIR', default=None)
 

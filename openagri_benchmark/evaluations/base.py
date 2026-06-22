@@ -7,7 +7,8 @@ from openagri_benchmark.conf import LOGIN_URL
 
 
 class BaseEvaluator():
-    def __init__(self, logger, setup_id, output_dir, admin_user, admin_pass):
+    def __init__(self, controller, logger, setup_id, output_dir, admin_user, admin_pass):
+        self.controller = controller
         self.logger = logger
         self.setup_id = setup_id
         self.output_dir = output_dir
@@ -15,7 +16,8 @@ class BaseEvaluator():
         self.admin_pass = admin_pass
         self.base_headers = {
             # 'Authorization': f'Bearer {auth_token}',
-            'Content-Type': 'application/ld+json',
+            # 'Content-Type': 'application/ld+json',
+            'Content-Type': 'application/json',
         }
 
 
