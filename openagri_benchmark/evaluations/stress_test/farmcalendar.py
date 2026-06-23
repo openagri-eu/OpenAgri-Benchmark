@@ -20,21 +20,12 @@ class FCStressTestMixin():
             farm_request_times.append(elapsed_time)
             time.sleep(0.8)
         end_timestamp = datetime.datetime.now().isoformat()
-        times_avg, times_std = (0.0, 0.0)
-        try:
-            times_avg = float(np.average(farm_request_times))
-            times_std = float(np.std(farm_request_times))
-        except:
-            #if empty times just use 0 as default
-            pass
 
         fc_results = {
             'start_timestamp': start_timestamp,
             'end_timestamp': end_timestamp,
             'farm_ids': farm_ids,
             'farm_request_times': farm_request_times,
-            'farm_request_times_avg': times_avg,
-            'farm_request_times_std': times_std,
         }
         return fc_results
 

@@ -24,7 +24,7 @@ class SimpleEval(BaseEvaluator):
         access, refresh = self.task_admin_login()
         self.logger.info(f"Logged in successfully: Access: {access}. Refresh {refresh}")
         self.base_headers['Authorization'] = f'Bearer {access}'
-
+        time.sleep(4)
         farms = self.task_retrieve_fc_farm_list()
 
         output.update({
