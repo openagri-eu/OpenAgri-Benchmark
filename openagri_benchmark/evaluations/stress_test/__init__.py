@@ -11,11 +11,12 @@ from openagri_benchmark.conf import GATEKEEPER_PROXY_BASE
 
 from ..base import BaseEvaluator
 from .farmcalendar import FCStressTestMixin
+from .pestanddesease import PNDStressTestMixin
 
 
 
 
-class StressTestEval(FCStressTestMixin, BaseEvaluator):
+class StressTestEval(FCStressTestMixin, PNDStressTestMixin, BaseEvaluator):
 
     def calculate_stats(self, stats):
         if len(stats) == 0:
@@ -96,6 +97,7 @@ class StressTestEval(FCStressTestMixin, BaseEvaluator):
         #     'farmcalendar_results': fc_results,
         # })
         output.update(self.run_service_tasks('farmcalendar', self.fc_tasks))
+        output.update(self.run_service_tasks('pestanddesease', self.pnd_tasks))
         return output
 
 

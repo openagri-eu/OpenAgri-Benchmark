@@ -1,0 +1,85 @@
+STRESS TEST — Detaljan opis
+===========================
+
+CILJ
+----
+Pronaći gde sistem počinje da puca pod opterećenjem i kvantifikovati koliko košta
+svaka operacija u smislu latencije, CPU-a i memorije.
+
+
+MEHANIZAM
+---------
+Svaka operacija se testira posebno, sa rastućim brojem konkurentnih zahteva u sekundi
+(npr. 1 rps, 2 rps, 5 rps, 10 rps, 20 rps). Za svaki nivo se mere latencija, CPU
+potrošnja kontejnera i memorija. Poredi se kako se metrike menjaju kada se opterećenje
+povećava — da li latencija raste linearno, eksponencijalno, ili ostaje stabilna.
+
+Zahtevi se šalju konkurentno koristeći threading.Timer — svaki zahtev se pokreće
+na posebnom threadu sa odgodom od (1/rps) sekundi između pokretanja. Na primer, za
+rps=2 odgoda između threadova je 0.5s. Ako je response time zahteva duži od te odgode,
+dolazi do overlapa i više zahteva se obrađuje istovremeno na serveru.
+
+
+OPERACIJE KOJE SE TESTIRAJU (FarmCalendar)
+------------------------------------------
+1.  Register Farm Parcel      — POST koji kreira parcelu sa geometrijom vezanom za farmu
+2.  Register Crop             — POST koji vezuje usev za parcelu
+3.  Register Generic Activity — POST generičke aktivnosti slobodnog formata
+4.  Register Built-in Activity — POST unapred definisane aktivnosti (prskanje, oranje...)
+5.  List Farm Parcels         — GET sve parcele, tipično paginiran
+6.  Filter Parcel by lat/long — GET sa koordinatama, vraća parcele koje sadrže tu tačku (prostorna query)
+7.  List All Activities       — GET sve aktivnosti za farmu
+8.  List Built-in Activity    — GET samo built-in tip aktivnosti
+
+Svaka operacija ima različitu težinu:
+- List Farm Parcels je jeftin SELECT iz baze
+- Filter Parcel by lat/long je prostorna SQL query, potencijalno 10x skuplja
+- Register operacije pišu u bazu i mogu okidati poslovnu logiku
+- List All Activities bez paginacije može učitati hiljade redova u RAM odjednom
+
+
+METRIKE
+-------
+Latencija — koliko traje jedan HTTP zahtev od slanja do odgovora (meri se perf_counter
+za visoku preciznost). Otkriva kad sistem počinje da kasni i gde je limit propusnosti.
+
+CPU — potrošnja svakog Docker kontejnera tokom intervala testa. Otkriva računski
+intenzivne operacije. Ako CPU ode na 100%, sistem ne može primati više zahteva bez
+horizontalnog skaliranja.
+
+Memorija — RAM potrošnja kontejnera. Otkriva operacije koje učitavaju previše podataka
+odjednom ili curenje memorije. Kritično za List operacije bez paginacije pod opterećenjem.
+
+
+KLASIFIKACIJA OPERACIJA
+-----------------------
+Rezultat stress testa je mapa koja svrstava svaku operaciju u jednu od tri kategorije:
+
+  Lightweight  — latencija ostaje niska čak i na visokom rps, CPU/mem minimalni
+  Regular      — umerena latencija, raste predvidivo sa opterećenjem
+  Heavy        — latencija eksplodira ili CPU/mem idu visoko već na malom rps
+
+Ova klasifikacija govori:
+- Developerima: gde da optimizuju kod ili query-je
+- DevOps-u: kako dimenzionirati infrastrukturu
+- Arhitektama: koje operacije smeju biti sinhrone, a koje treba staviti u queue
+
+
+TRENUTNA IMPLEMENTIRANOST
+--------------------------
+Implementirano:
+  - Register Farm          (task_register_farm)
+  - Register Farm Parcel   (task_register_farm_parcel)
+
+Nije implementirano:
+  - Register Crop
+  - Register Generic Activity
+  - Register Built-in Activity
+  - List Farm Parcels
+  - Filter Parcel by lat/long
+  - List All Activities
+  - List Built-in Activity
+
+Napomena: trenutna implementacija koristi fiksni rps=2, bez logike za rastuće
+opterećenje. Pravi stress test zahteva petlju kroz više rps nivoa sa odvojenim
+merenjima po nivou.

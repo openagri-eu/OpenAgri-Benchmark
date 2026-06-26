@@ -22,6 +22,7 @@ GATEKEEPER_ADMIN_USER = config('GATEKEEPER_ADMIN_USER', default='admin')
 GATEKEEPER_ADMIN_PASSWORD = config('GATEKEEPER_ADMIN_PASSWORD', default='admin')
 
 FARMCALENDAR_BASE_URL = config('FARMCALENDAR_BASE_URL', default='http://localhost:8002')
+PND_BASE_URL = config('PND_BASE_URL', default='http://localhost:8003')
 
 
 LOGGING_LEVEL = config('LOGGING_LEVEL', default='DEBUG')
