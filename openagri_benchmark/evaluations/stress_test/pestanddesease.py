@@ -66,7 +66,7 @@ class PNDStressTestMixin():
         entry_request_times[index] = elapsed_time
 
     def task_register_desease(self, desease_i):
-        url = f'{PND_BASE_URL}/api/v1/desease/'
+        url = f'{PND_BASE_URL}/api/v1/disease/'
 
         data = {
             "name": f"Powdery Mildew {desease_i}",
@@ -80,7 +80,7 @@ class PNDStressTestMixin():
             ]
         }
         headers = self.base_headers.copy()
-        
+
         # Record start time before the request
         start_time = time.perf_counter()
         response = requests.post(url, json=data, headers=headers)
@@ -88,7 +88,7 @@ class PNDStressTestMixin():
         end_time = time.perf_counter()
         elapsed_time = end_time - start_time
 
-        if response.status_code == 201:
+        if response.status_code == 200:
             entry_data = response.json()
             entry_id = entry_data['id']
             return elapsed_time, entry_id
