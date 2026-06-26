@@ -13,15 +13,17 @@ from openagri_benchmark.conf import (
 
 
 class FCStressTestMixin():
+    fc_rps = 2
+    fc_num_entries = 10
 
     def fc_tasks(self):
         start_timestamp = datetime.datetime.now().isoformat()
         fc_results = {}
 
-        reg_farms_results = self.fc_register_farms(num_farm=10, rps=2)
+        reg_farms_results = self.fc_register_farms(num_farm=self.fc_num_entries, rps=self.fc_rps)
         fc_results.update(reg_farms_results)
 
-        reg_parcels_results = self.fc_register_farm_parcels(num_parcels=10, rps=2, farm_ids=reg_farms_results['farm_ids'])
+        reg_parcels_results = self.fc_register_farm_parcels(num_parcels=self.fc_num_entries, rps=self.fc_rps, farm_ids=reg_farms_results['farm_ids'])
         fc_results.update(reg_parcels_results)
 
         # farm_parcel_ids, farm_parcel_request_times =
