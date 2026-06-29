@@ -60,8 +60,8 @@ services:
     depends_on:
       farmcalendar_db:
         condition: service_healthy
-      gatekeeper:
-        condition: service_healthy
+      # gatekeeper:
+      #   condition: service_healthy
 
 volumes:
   farmcalendar_db_data:

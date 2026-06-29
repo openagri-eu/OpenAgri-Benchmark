@@ -54,6 +54,7 @@ class BenchmarkController(object):
                     time.sleep(self.health_check_interval)
             else:
                 check_ok = True
+                self.logger.info(f'Healthchecking OK for url: {check_url}')
 
         return check_ok
 

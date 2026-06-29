@@ -3,6 +3,7 @@ import json
 import requests
 
 from openagri_benchmark.conf import LOGIN_URL
+from openagri_benchmark.auth import mocked_auth_token
 
 
 
@@ -39,6 +40,9 @@ class BaseEvaluator():
 
     def task_admin_login(self):
         return self.get_auth_token(self.admin_user, self.admin_pass)
+
+    def task_mocked_admin_login(self):
+        return mocked_auth_token(self.admin_user)
 
     def run(self):
         output = {

@@ -14,6 +14,9 @@ BOOTSTRAP_DIR = config('BOOTSTRAP_DIR', default=None)
 
 OUTPUTS_DIR = config('OUTPUTS_DIR', default=DEFAULT_OUTPUTS_DIR)
 
+JWT_SIGNING_KEY = config('JWT_SIGNING_KEY')
+JWT_ALG = config('JWT_ALG')
+
 GATEKEEPER_BASE_URL = config('GATEKEEPER_BASE_URL', default='http://localhost:8001')
 GATEKEEPER_PROXY_BASE = f'{GATEKEEPER_BASE_URL}/api/proxy/'
 LOGIN_URL = f"{GATEKEEPER_BASE_URL}/api/login/"
