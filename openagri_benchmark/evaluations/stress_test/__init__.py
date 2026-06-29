@@ -6,7 +6,10 @@ import numpy as np
 
 import requests
 
-from openagri_benchmark.conf import GATEKEEPER_PROXY_BASE
+from openagri_benchmark.conf import (
+    GATEKEEPER_BASE_URL,
+    FARMCALENDAR_BASE_URL,
+)
 
 
 from ..base import BaseEvaluator
@@ -17,6 +20,13 @@ from .pestanddesease import PNDStressTestMixin
 
 
 class StressTestEval(FCStressTestMixin, PNDStressTestMixin, BaseEvaluator):
+    def __init__(self, controller, logger, setup_id, output_dir, admin_user, admin_pass):
+        super().__init__(controller, logger, setup_id, output_dir, admin_user, admin_pass)
+
+        self.health_check_urls = [
+            GATEKEEPER_BASE_URL,
+            FARMCALENDAR_BASE_URL,
+        ]
 
     def calculate_stats(self, stats):
         if len(stats) == 0:

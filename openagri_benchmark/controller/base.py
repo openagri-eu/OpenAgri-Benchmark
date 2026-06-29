@@ -7,11 +7,12 @@ import shutil
 import subprocess
 import threading
 
+import requests
+
 from openagri_benchmark.conf import (
     OUTPUTS_DIR,
     LOGGING_LEVEL,
-    WAIT_SECONDS_AFTER_UP,
-    STATS_INTERVAL_SECONDS,
+    HEALTHCHECK_TIMEOUT,
     GATEKEEPER_ADMIN_USER,
     GATEKEEPER_ADMIN_PASSWORD,
 )
@@ -30,7 +31,37 @@ class BenchmarkController(object):
         self.setup_id = '_'.join([self.evaluation_name, self.evaluation_postfix, self.str_init_timestamp])
         self.output_dir = os.path.join(OUTPUTS_DIR, self.setup_id)
         self.force_reset_output = force_reset_output
+        self.health_check_init_timestamp = None
+        self.health_check_timeout = HEALTHCHECK_TIMEOUT
+        self.health_check_interval = 1
         self.setup_controller()
+
+    def _health_check_url(self, check_url):
+        check_ok = False
+        while not check_ok:
+            self.logger.info(f'Healthchecking url: {check_url}')
+            try:
+                response = requests.get(check_url)
+                response.raise_for_status()
+            except:
+                check_ok = False
+                self.logger.info(f'Healthchecking failed for url: {check_url}. Retry in {self.health_check_interval}s...')
+                elapsed_time = datetime.datetime.now() - self.health_check_init_timestamp
+                if elapsed_time.seconds > self.health_check_timeout:
+                    self.init_timestamp = datetime.datetime.now()
+                    raise RuntimeError(f'Healthcheck timeout ({self.health_check_timeout}) while processing {check_url}')
+                else:
+                    time.sleep(self.health_check_interval)
+            else:
+                check_ok = True
+
+        return check_ok
+
+    def init_health_check_test(self, health_check_urls):
+        self.logger.info(f'Waiting for health check on the following urls: {health_check_urls}')
+        self.health_check_init_timestamp = datetime.datetime.now()
+        for check_url in health_check_urls:
+            self._health_check_url(check_url)
 
     def start_containers(self):
         if self.bootstrap_dir is None:
@@ -40,8 +71,6 @@ class BenchmarkController(object):
         self.logger.info(f'Will start containers in bootstrap directory at: {self.bootstrap_dir}.')
         compose_script = os.path.join(self.bootstrap_dir, 'run_compose.py')
         subprocess.run(['python3', compose_script, 'up', '-d'], cwd=self.bootstrap_dir, check=True)
-        self.logger.info(f'Will wait for {WAIT_SECONDS_AFTER_UP} seconds before starting evalution...')
-        time.sleep(WAIT_SECONDS_AFTER_UP)
 
     def start_container_stats(self):
         self._stats = {}
@@ -147,6 +176,7 @@ class BenchmarkController(object):
         result = {}
         try:
             evaluator = self.load_evaluator(self.evaluation_name)
+            self.init_health_check_test(evaluator.health_check_urls)
             result = evaluator.run()
         except KeyboardInterrupt as kie:
             self.logger.warning('Forcefully stopping benchmark.')

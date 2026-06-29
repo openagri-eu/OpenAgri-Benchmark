@@ -19,6 +19,7 @@ class BaseEvaluator():
             # 'Content-Type': 'application/ld+json',
             'Content-Type': 'application/json',
         }
+        self.health_check_urls = []
 
 
     def get_auth_token(self, username, passsword):
