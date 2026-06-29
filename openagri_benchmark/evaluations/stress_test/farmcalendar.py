@@ -7,23 +7,33 @@ import threading
 
 
 from openagri_benchmark.conf import (
-    # GATEKEEPER_PROXY_BASE,
     FARMCALENDAR_BASE_URL,
 )
 
+from .base import BaseStressTestEval
 
-class FCStressTestMixin():
-    fc_rps = 2
-    fc_num_entries = 10
+
+
+class FCStressTest(BaseStressTestEval):
+    def __init__(self, controller, logger, setup_id, output_dir, admin_user, admin_pass):
+        super().__init__(controller, logger, setup_id, output_dir, admin_user, admin_pass)
+        self.health_check_urls = [
+            FARMCALENDAR_BASE_URL,
+        ]
+
+    def run(self):
+        output = super().run()
+        output.update(self.run_service_tasks('farmcalendar', self.fc_tasks))
+        return output
 
     def fc_tasks(self):
         start_timestamp = datetime.datetime.now().isoformat()
         fc_results = {}
 
-        reg_farms_results = self.fc_register_farms(num_farm=self.fc_num_entries, rps=self.fc_rps)
+        reg_farms_results = self.fc_register_farms(num_farm=self.num_entries, rps=self.rps)
         fc_results.update(reg_farms_results)
 
-        reg_parcels_results = self.fc_register_farm_parcels(num_parcels=self.fc_num_entries, rps=self.fc_rps, farm_ids=reg_farms_results['farm_ids'])
+        reg_parcels_results = self.fc_register_farm_parcels(num_parcels=self.num_entries, rps=self.rps, farm_ids=reg_farms_results['farm_ids'])
         fc_results.update(reg_parcels_results)
 
         # farm_parcel_ids, farm_parcel_request_times =
@@ -72,7 +82,6 @@ class FCStressTestMixin():
         entry_request_times[index] = elapsed_time
 
     def task_register_farm(self, farm_i):
-        # url = f'{GATEKEEPER_PROXY_BASE}farmcalendar/api/v1/Farm/'
         url = f'{FARMCALENDAR_BASE_URL}/api/v1/Farm/'
 
         data = {
@@ -97,10 +106,6 @@ class FCStressTestMixin():
             }
         }
         headers = self.base_headers.copy()
-        headers.update({
-            # not sure why this works with FC, but not when using GK
-            # 'Accept': 'application/ld+json',  # Requesting JSON-LD format
-        })
         # Record start time before the request
         start_time = time.perf_counter()
         response = requests.post(url, json=data, headers=headers)
@@ -136,7 +141,6 @@ class FCStressTestMixin():
         # Wait for all threads to complete
         for thread in threads:
             thread.join()
-        # self.fc_register_farm_parcels_thread_worker(0, farm_ids, parcel_ids, parcel_request_times)
 
         end_timestamp = datetime.datetime.now().isoformat()
 
@@ -228,3 +232,6 @@ class FCStressTestMixin():
         center_long = round((x1 + x2) / 2, 6)
 
         return wkt, center_lat, center_long
+
+
+evaluator = FCStressTest

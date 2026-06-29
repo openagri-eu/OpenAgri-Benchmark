@@ -17,6 +17,7 @@ dependencies = [
     "numpy==2.2.6",
     "fastapi==0.129.0",
     "SQLAlchemy==2.0.46",
+    "pyjwt==2.8.0",
 ]
 
 [project.optional-dependencies]

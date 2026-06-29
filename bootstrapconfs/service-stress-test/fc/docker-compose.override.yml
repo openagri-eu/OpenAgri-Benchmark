@@ -1,0 +1,5 @@
+services:
+
+    farmcalendar:
+        ports:
+            - "${FARM_CALENDAR_APP_PORT}:${FARM_CALENDAR_APP_PORT}"
