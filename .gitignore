@@ -150,7 +150,8 @@ activemq-data/
 *.sage.py
 
 # Environments
-.env
+# specifically only the .env in the root, not the ones inside bootstrap conf
+/.env
 .envrc
 .venv
 env/
