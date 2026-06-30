@@ -83,14 +83,22 @@ class BaseStressTestEval(BaseEvaluator):
                 continue
             request_times = service_results[key]
             times_avg, times_std = (0.0, 0.0)
+            p50, p95, p99 = (None, None, None)
             try:
                 times_avg = float(np.average(request_times))
-                times_std = float(np.std(request_times))
+                if len(request_times) > 2:
+                    times_std = float(np.std(request_times))
+                # Calculate percentiles
+                percentiles = np.percentile(request_times, [50, 95, 99])
+                p50, p95, p99 = [float(p) for p in percentiles]
             except:
                 #if empty times just use 0 as default
                 pass
             service_results[f'{key}_avg'] = times_avg
             service_results[f'{key}_std'] = times_std
+            service_results[f'{key}_p50'] = p50
+            service_results[f'{key}_p95'] = p95
+            service_results[f'{key}_p99'] = p99
         return service_results
 
     def run_service_tasks(self, service_name, service_tasks_func):
