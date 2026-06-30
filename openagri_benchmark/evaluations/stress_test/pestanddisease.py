@@ -9,10 +9,12 @@ import threading
 
 from openagri_benchmark.conf import (
     PND_BASE_URL,
-    SOURCE_DIR,
+    PND_CSV_PATH,
 )
 
-PND_CSV_PATH = os.path.join(SOURCE_DIR, 'data', 'pdm_data_90days.csv')
+
+from .base import BaseStressTestEval
+
 
 _PARCEL_NAMES = [
     "Vojvodina North Field",
@@ -57,7 +59,7 @@ _THREAT_MODEL_DATA = [
 ]
 
 
-class PNDStressTestMixin():
+class PNDStressTest(BaseStressTestEval):
     PND_RPS = 2
     NUM_DISEASE = 10
     NUM_PEST_MODELS = 10
@@ -65,6 +67,19 @@ class PNDStressTestMixin():
     NUM_PARCELS = 5
     PND_GDD_FROM_DATE = '2026-03-20'
     PND_GDD_TO_DATE = '2026-06-17'
+
+    def __init__(self, controller, logger, setup_id, output_dir, admin_user, admin_pass):
+        super().__init__(controller, logger, setup_id, output_dir, admin_user, admin_pass)
+        self.health_check_urls = [
+            PND_BASE_URL + '/docs',
+        ]
+
+
+    def run(self):
+        output = super().run()
+        self.pnd_setup()
+        output.update(self.run_service_tasks('pestanddisease', self.pnd_tasks))
+        return output
 
     def _load_pnd_csv(self):
         if not os.path.exists(PND_CSV_PATH):
@@ -674,3 +689,5 @@ class PNDStressTestMixin():
         if response.status_code != 200:
             self.logger.warning(f'Fuzzy risk calculate for parcel {parcel_id} returned {response.status_code}: {response.text[:200]}')
         return elapsed_time
+
+evaluator = PNDStressTest

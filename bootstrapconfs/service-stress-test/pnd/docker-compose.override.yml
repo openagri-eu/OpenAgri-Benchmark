@@ -4,6 +4,3 @@ services:
         ports:
             - "${PDM_SERVICE_PORT}:${PDM_SERVICE_PORT}"
 
-    depends_on:
-      pdm_db:
-        condition: service_healthy

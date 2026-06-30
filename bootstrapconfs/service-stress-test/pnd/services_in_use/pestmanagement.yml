@@ -16,8 +16,8 @@ services:
     depends_on:
       pdm_db:
         condition: service_healthy
-      gatekeeper:
-        condition: service_healthy
+      # gatekeeper:
+      #   condition: service_healthy
     image: ghcr.io/openagri-eu/openagri-pestanddiseasemanagement:latest
     command: /code/entrypoint.sh ${PDM_SERVICE_PORT}
     environment:
@@ -33,6 +33,7 @@ services:
       JWT_ALGORITHM: ${JWT_ALG}
       GATEKEEPER_BASE_URL: ${INTERNAL_GK_URL}
       USING_GATEKEEPER: ${PDM_USING_GATEKEEPER}
+      OFFLINE_DEPLOYMENT: ${PDM_OFFLINE_DEPLOYMENT}
       GATEKEEPER_USERNAME: ${GATEKEEPER_SUPERUSER_USERNAME}
       GATEKEEPER_PASSWORD: ${GATEKEEPER_SUPERUSER_PASSWORD}
       SERVICE_NAME: ${SERVICE_NAME}
