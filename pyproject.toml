@@ -23,8 +23,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "build",     # For building the package
-#    "twine",      # For uploading to PyPI
     "ipdb",      # For debugging
+]
+
+post = [
+    "notebook==7.6.0",
 ]
 
 [tool.setuptools]

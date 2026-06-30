@@ -88,6 +88,7 @@ class BenchmarkController(object):
 
         while not self.stats_stop_event.is_set():
             timestamp = datetime.datetime.now().isoformat()
+            self.logger.debug('Running docker stats...')
             result = subprocess.run(
                 ['python3', stats_script, 'stats', '--no-stream', '--format', 'json'],
                 cwd=self.bootstrap_dir,

@@ -21,10 +21,26 @@ class BaseStressTestEval(BaseEvaluator):
     def __init__(self, controller, logger, setup_id, output_dir, admin_user, admin_pass):
         super().__init__(controller, logger, setup_id, output_dir, admin_user, admin_pass)
 
-        self.num_entries = 10
-        self.rps = 2
+        self.num_entries = 1
+        self.rps = 1
+        self.setup_workload_from_postix()
         self.health_check_urls = [
         ]
+
+
+    def setup_workload_from_postix(self):
+        if self.controller.evaluation_postfix.lower() == 'low':
+            self.num_entries = 10
+            self.rps = 2
+        elif self.controller.evaluation_postfix.lower() == 'medium':
+            self.num_entries = 50
+            self.rps = 10
+        elif self.controller.evaluation_postfix.lower() == 'high':
+            self.num_entries = 250
+            self.rps = 50
+        else:
+            return
+        self.logger.debug(f'Setting up workload for "{self.controller.evaluation_postfix.lower()}". RPS :{self.rps} . Num Entries {self.num_entries}')
 
     def calculate_stats(self, stats):
         if len(stats) == 0:
