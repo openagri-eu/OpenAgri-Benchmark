@@ -1,6 +1,3 @@
-import datetime
-import time
-
 import pandas as pd
 import numpy as np
 
@@ -14,7 +11,7 @@ from openagri_benchmark.conf import (
 
 from ..base import BaseEvaluator
 from .farmcalendar import FCStressTestMixin
-from .pestanddesease import PNDStressTestMixin
+from .pestanddisease import PNDStressTestMixin
 
 
 
@@ -107,7 +104,8 @@ class StressTestEval(FCStressTestMixin, PNDStressTestMixin, BaseEvaluator):
         #     'farmcalendar_results': fc_results,
         # })
         output.update(self.run_service_tasks('farmcalendar', self.fc_tasks))
-        output.update(self.run_service_tasks('pestanddesease', self.pnd_tasks))
+        self.pnd_setup()
+        output.update(self.run_service_tasks('pestanddisease', self.pnd_tasks))
         return output
 
 
