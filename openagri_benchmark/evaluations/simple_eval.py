@@ -2,13 +2,19 @@ import time
 
 import requests
 
-from openagri_benchmark.conf import GATEKEEPER_PROXY_BASE
+from openagri_benchmark.conf import GATEKEEPER_PROXY_BASE, GATEKEEPER_BASE_URL
 
 
 from .base import BaseEvaluator
 
 
 class SimpleEval(BaseEvaluator):
+    def __init__(self, controller, logger, setup_id, output_dir, admin_user, admin_pass):
+        super().__init__(controller, logger, setup_id, output_dir, admin_user, admin_pass)
+        self.health_check_urls = [
+            GATEKEEPER_BASE_URL,
+        ]
+
 
     def task_retrieve_fc_farm_list(self):
         url = f'{GATEKEEPER_PROXY_BASE}farmcalendar/api/v1/Farm/'
