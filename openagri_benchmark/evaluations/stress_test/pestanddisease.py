@@ -99,7 +99,33 @@ class PNDStressTest(BaseStressTestEval):
 
     # --- setup (not measured) ---
 
+    def _pnd_register_and_login(self):
+        admin_email = 'admin@admin.com'
+        admin_pass = 'Admin1234'
+        try:
+            response = requests.post(
+                f'{PND_BASE_URL}/api/v1/user/register/',
+                json={"email": admin_email, "password": admin_pass},
+            )
+            if response.status_code not in (200, 409):
+                self.logger.warning(f'PDM register returned {response.status_code}: {response.text[:200]}')
+        except Exception as e:
+            self.logger.warning(f'PDM register failed: {e}')
+
+        try:
+            response = requests.post(
+                f'{PND_BASE_URL}/api/v1/login/access-token/',
+                data={"username": admin_email, "password": admin_pass},
+            )
+            response.raise_for_status()
+            token = response.json()['access_token']
+            self.base_headers['Authorization'] = f'Bearer {token}'
+            self.logger.info('PDM login successful, token updated')
+        except Exception as e:
+            self.logger.warning(f'PDM login failed: {e}')
+
     def pnd_setup(self):
+        self._pnd_register_and_login()
         self.logger.info(f'PND setup: creating {self.NUM_PARCELS} parcels — POST will return 500 (weather fetch offline), parcels still saved to DB')
         self.pnd_register_parcels(num_parcels=self.NUM_PARCELS, rps=self.PND_RPS)
         self.pnd_parcel_ids = self._pnd_get_parcel_ids(num_parcels=self.NUM_PARCELS)
