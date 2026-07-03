@@ -21,6 +21,7 @@ class BaseStressTestEval(BaseEvaluator):
     def __init__(self, controller, logger, setup_id, output_dir, admin_user, admin_pass):
         super().__init__(controller, logger, setup_id, output_dir, admin_user, admin_pass)
 
+        self.sleep_before_stats = 2
         self.num_entries = 1
         self.rps = 1
         self.setup_workload_from_postix()
@@ -47,14 +48,18 @@ class BaseStressTestEval(BaseEvaluator):
             return {}
         records = []
         container_names_map = {}
+        has_interpolated = False
         for timestamp, containers in stats.items():
             for container in containers:
                 records.append({
                     'timestamp': timestamp,
                     'container': container.get('Container'),
-                    'cpu': float(container.get('CPUPerc').rstrip('%')),
-                    'mem': float(container.get('MemPerc').rstrip('%'))
+                    'cpu': min(100, float(container.get('CPUPerc').rstrip('%'))),
+                    'mem': min(100, float(container.get('MemPerc').rstrip('%'))),
+                    'interp': container.get('Interpolated', False),
                 })
+                if container.get('Interpolated'):
+                    has_interpolated = True
                 if container.get('Name') != '--':
                     clean_name = container.get('Name').split('-')[-2]
                     container_names_map[container.get('Container')] = clean_name
@@ -71,7 +76,8 @@ class BaseStressTestEval(BaseEvaluator):
                 'cpu_std': group['cpu'].std(),
                 'mem_avg': group['mem'].mean(),
                 'mem_std': group['mem'].std(),
-                'count': len(group)
+                'count': len(group),
+                'interp': has_interpolated,
             }
 
         return result
@@ -101,9 +107,35 @@ class BaseStressTestEval(BaseEvaluator):
             service_results[f'{key}_p99'] = p99
         return service_results
 
+    def _task_base_result_dict(self, task_name, start_timestamp, end_timestamp, request_times):
+        return {
+            f'{task_name}_start_timestamp': start_timestamp,
+            f'{task_name}_end_timestamp': end_timestamp,
+            f'{task_name}_request_times': request_times,
+        }
+
+    def calculate_tasks_stats(self, service_results):
+        tasks_keys = [k.replace('_start_timestamp', '') for k in service_results.keys() if '_start_timestamp' in k]
+        tasks_stats_dict = {}
+        for task_name in tasks_keys:
+            start_timestamp = service_results[f'{task_name}_start_timestamp']
+            end_timestamp = service_results[f'{task_name}_end_timestamp']
+            task_stats = self.controller.get_stats_for_period(
+                start_timestamp,
+                end_timestamp
+            )
+            task_stats_results = self.calculate_stats(task_stats)
+            tasks_stats_dict[f'{task_name}_stats'] = task_stats_results
+        return tasks_stats_dict
+
     def run_service_tasks(self, service_name, service_tasks_func):
         service_results = service_tasks_func()
         service_results = self.avg_requests_time_calculation(service_results)
+        time.sleep(self.sleep_before_stats)
+
+        #could just change inplace from pointer, but lets make it explicit
+        service_results.update(self.calculate_tasks_stats(service_results))
+
         service_stats = self.controller.get_stats_for_period(service_results['start_timestamp'], service_results['end_timestamp'])
         service_stats_results = self.calculate_stats(service_stats)
         service_results['stats'] = service_stats_results
