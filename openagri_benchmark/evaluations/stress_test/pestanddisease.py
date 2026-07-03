@@ -363,52 +363,30 @@ class PNDStressTest(BaseStressTestEval):
         return pnd_results
 
     def pnd_register_disease(self, num_disease, rps):
-        stagger_interval = 1 / rps
         disease_ids = [None] * num_disease
-        disease_request_times = [None] * num_disease
 
-        start_timestamp = datetime.datetime.now().isoformat()
-        threads = []
-        for i in range(num_disease):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.pnd_register_disease_worker,
-                args=(i, disease_ids, disease_request_times)
-            )
-            thread.daemon = False
-            thread.start()
-            threads.append(thread)
+        results = self.multithread_task(
+            'register_disease',
+            self.task_register_disease, num_disease, rps,
+            disease_ids=disease_ids  # Pass disease_ids as extra kwarg
+        )
 
-        for thread in threads:
-            thread.join()
-        end_timestamp = datetime.datetime.now().isoformat()
-
-
-        task_name = 'register_disease'
-        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, disease_request_times)
-        result.update({
+        results.update({
             'disease_ids': disease_ids,
         })
-        return result
+        return results
 
-    def pnd_register_disease_worker(self, index, entry_ids, entry_request_times):
-        "running each request on a separated thread, storing result pointer args"
-        self.logger.debug(f'Registering disease {index}')
-        elapsed_time, disease_id = self.task_register_disease(index)
-        entry_ids[index] = disease_id
-        entry_request_times[index] = elapsed_time
-
-    def task_register_disease(self, disease_i):
+    def task_register_disease(self, task_i, disease_ids):
         url = f'{PND_BASE_URL}/api/v1/disease/'
         data = {
-            "name": _DISEASE_DATA[disease_i % len(_DISEASE_DATA)]["name"],
-            "eppo_code": _DISEASE_DATA[disease_i % len(_DISEASE_DATA)]["eppo_code"],
-            "base_gdd": _DISEASE_DATA[disease_i % len(_DISEASE_DATA)]["base_gdd"],
-            "description": _DISEASE_DATA[disease_i % len(_DISEASE_DATA)]["description"],
+            "name": _DISEASE_DATA[task_i % len(_DISEASE_DATA)]["name"],
+            "eppo_code": _DISEASE_DATA[task_i % len(_DISEASE_DATA)]["eppo_code"],
+            "base_gdd": _DISEASE_DATA[task_i % len(_DISEASE_DATA)]["base_gdd"],
+            "description": _DISEASE_DATA[task_i % len(_DISEASE_DATA)]["description"],
             "gdd_points": [
-            {"start": 0,   "end": 100, "descriptor": "Germination"},
-            {"start": 100, "end": 300, "descriptor": "Growth"},
-            {"start": 300, "end": 600, "descriptor": "Sporulation"}
+                {"start": 0, "end": 100, "descriptor": "Germination"},
+                {"start": 100, "end": 300, "descriptor": "Growth"},
+                {"start": 300, "end": 600, "descriptor": "Sporulation"}
             ]
         }
         headers = self.base_headers.copy()
@@ -418,7 +396,9 @@ class PNDStressTest(BaseStressTestEval):
         elapsed_time = time.perf_counter() - start_time
 
         if response.status_code == 200:
-            return elapsed_time, response.json()['id']
+            disease_id = response.json()['id']
+            disease_ids[task_i] = disease_id
+            return elapsed_time
         self.logger.warning(f'Register disease returned {response.status_code}: {response.text[:200]}')
         return elapsed_time, None
 
