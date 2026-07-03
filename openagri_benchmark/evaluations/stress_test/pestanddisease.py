@@ -227,21 +227,11 @@ class PNDStressTest(BaseStressTestEval):
                 self.logger.warning(f'Failed to create rule for pest model {pest_model_id}: {e}')
 
     def pnd_register_parcels(self, num_parcels, rps):
-        stagger_interval = 1 / rps
-        threads = []
         for i in range(num_parcels):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.task_register_parcel,
-                args=(i,)
-            )
-            thread.daemon = False
-            thread.start()
-            threads.append(thread)
-        for thread in threads:
-            thread.join()
+            self.task_register_parcel(i)
 
     def task_register_parcel(self, parcel_i):
+        self.logger.debug(f'Registering Parcel {parcel_i}')
         url = f'{PND_BASE_URL}/api/v1/parcel/'
         data = {
             "name": _PARCEL_NAMES[parcel_i % len(_PARCEL_NAMES)],
@@ -322,10 +312,9 @@ class PNDStressTest(BaseStressTestEval):
     # --- tasks (measured) ---
 
     def pnd_tasks(self):
-        start_timestamp = datetime.datetime.now().isoformat()
         pnd_results = {}
 
-        reg_disease_results = self.pnd_register_disease(num_disease=self.NUM_DISEASE, rps=self.rps)
+        reg_disease_results, disease_ids = self.pnd_register_disease(num_disease=self.NUM_DISEASE, rps=self.rps)
         pnd_results.update(reg_disease_results)
 
         list_disease_results = self.pnd_list_diseases(count=self.NUM_DISEASE, rps=self.rps)
@@ -340,7 +329,7 @@ class PNDStressTest(BaseStressTestEval):
             get_data_results = self.pnd_get_parcel_data(parcel_ids=parcel_ids, rps=self.rps)
             pnd_results.update(get_data_results)
 
-        disease_id = next((d for d in pnd_results.get('disease_ids', []) if d is not None), None)
+        disease_id = next((d for d in disease_ids if d is not None), None)
         if parcel_ids and disease_id:
             gdd_results = self.pnd_calculate_gdd(parcel_ids=parcel_ids, disease_id=disease_id, rps=self.rps)
             pnd_results.update(gdd_results)
@@ -355,11 +344,6 @@ class PNDStressTest(BaseStressTestEval):
             fuzzy_results = self.pnd_fuzzy_risk_calculate(parcel_ids=parcel_ids, threat_model_id=threat_model_id, rps=self.rps)
             pnd_results.update(fuzzy_results)
 
-        end_timestamp = datetime.datetime.now().isoformat()
-        pnd_results.update({
-            'start_timestamp': start_timestamp,
-            'end_timestamp': end_timestamp,
-        })
         return pnd_results
 
     def pnd_register_disease(self, num_disease, rps):
@@ -371,10 +355,7 @@ class PNDStressTest(BaseStressTestEval):
             disease_ids=disease_ids  # Pass disease_ids as extra kwarg
         )
 
-        results.update({
-            'disease_ids': disease_ids,
-        })
-        return results
+        return results, disease_ids
 
     def task_register_disease(self, task_i, disease_ids):
         url = f'{PND_BASE_URL}/api/v1/disease/'
