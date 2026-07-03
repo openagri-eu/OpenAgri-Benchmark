@@ -84,11 +84,9 @@ class BaseStressTestEval(BaseEvaluator):
         return result
 
     def avg_requests_time_calculation(self, service_results):
-        results_keys = list(service_results.keys())
-        for key in results_keys:
-            if not key.endswith('request_times'):
-                continue
-            request_times = service_results[key]
+        for task, task_result in service_results.items():
+            key = 'request_times'
+            request_times = task_result[key]
             times_avg, times_std = (0.0, 0.0)
             p50, p95, p99 = (None, None, None)
             try:
@@ -101,37 +99,36 @@ class BaseStressTestEval(BaseEvaluator):
             except:
                 #if empty times just use 0 as default
                 pass
-            service_results[f'{key}_avg'] = times_avg
-            service_results[f'{key}_std'] = times_std
-            service_results[f'{key}_p50'] = p50
-            service_results[f'{key}_p95'] = p95
-            service_results[f'{key}_p99'] = p99
+            task_result[f'{key}_avg'] = times_avg
+            task_result[f'{key}_std'] = times_std
+            task_result[f'{key}_p50'] = p50
+            task_result[f'{key}_p95'] = p95
+            task_result[f'{key}_p99'] = p99
         return service_results
 
     def _task_base_result_dict(self, task_name, start_timestamp, end_timestamp, request_times):
         return {
-            f'{task_name}_start_timestamp': start_timestamp,
-            f'{task_name}_end_timestamp': end_timestamp,
-            f'{task_name}_request_times': request_times,
+            task_name: {
+                f'start_timestamp': start_timestamp,
+                f'end_timestamp': end_timestamp,
+                f'request_times': request_times,
+            }
         }
 
-    def calculate_tasks_stats(self, service_results):
-        tasks_keys = [k.replace('_start_timestamp', '') for k in service_results.keys() if '_start_timestamp' in k]
-        tasks_stats_dict = {}
-        for task_name in tasks_keys:
-            start_timestamp = service_results[f'{task_name}_start_timestamp']
-            end_timestamp = service_results[f'{task_name}_end_timestamp']
+    def calculate_per_tasks_stats(self, service_results):
+        for task_name, task_result in service_results.items():
+            start_timestamp = task_result['start_timestamp']
+            end_timestamp = task_result['end_timestamp']
             task_stats = self.controller.get_stats_for_period(
                 start_timestamp,
                 end_timestamp
             )
             task_stats_results = self.calculate_stats(task_stats)
-            tasks_stats_dict[f'{task_name}_stats'] = task_stats_results
-        return tasks_stats_dict
+            task_result[f'stats'] = task_stats_results
+        return service_results
 
     def multithread_task(self, task_name, task, num_operations, rps, **kwargs):
         stagger_interval = 1 / rps
-        # disease_ids = [None] * num_operations
         task_times = [None] * num_operations
 
         start_timestamp = datetime.datetime.now().isoformat()
@@ -152,8 +149,6 @@ class BaseStressTestEval(BaseEvaluator):
         end_timestamp = datetime.datetime.now().isoformat()
 
 
-        # task_name = 'register_disease'
-        # task_name = task.__name__
         result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, task_times)
         return result
 
@@ -162,47 +157,36 @@ class BaseStressTestEval(BaseEvaluator):
         elapsed_time = task(index, **kwargs)
         task_times[index] = elapsed_time
 
-    def pnd_register_disease_worker(self, index, entry_ids, entry_request_times):
-        "running each request on a separated thread, storing result pointer args"
-        self.logger.debug(f'Registering disease {index}')
-        elapsed_time, disease_id = self.task_register_disease(index)
-        entry_ids[index] = disease_id
-        entry_request_times[index] = elapsed_time
-
 
     def run_service_tasks(self, service_name, service_tasks_func):
+        start_timestamp = datetime.datetime.now().isoformat()
         service_results = service_tasks_func()
+        end_timestamp = datetime.datetime.now().isoformat()
+
+        final_output = {
+            'start_timestamp': start_timestamp,
+            'end_timestamp': end_timestamp,
+            'tasks': service_results
+        }
         service_results = self.avg_requests_time_calculation(service_results)
         time.sleep(self.sleep_before_stats)
 
         #could just change inplace from pointer, but lets make it explicit
-        service_results.update(self.calculate_tasks_stats(service_results))
+        service_results.update(self.calculate_per_tasks_stats(service_results))
 
-        service_stats = self.controller.get_stats_for_period(service_results['start_timestamp'], service_results['end_timestamp'])
-        service_stats_results = self.calculate_stats(service_stats)
-        service_results['stats'] = service_stats_results
+        service_stats = self.controller.get_stats_for_period(start_timestamp, end_timestamp)
+        final_output['stats'] = self.calculate_stats(service_stats)
 
         return {
-            f'{service_name}_results': service_results,
+            f'{service_name}': final_output
         }
 
     def run(self):
         output = super().run()
-        # access, refresh = self.task_admin_login()
         access = self.task_mocked_admin_login()
         self.logger.info(f"(mocked) Logged in successfully: Access: {access}.")
         self.base_headers['Authorization'] = f'Bearer {access}'
 
-
-        # fc_results = self.fc_tasks()
-        # fc_results = self.avg_requests_time_calculation(fc_results)
-        # fc_stats = self.controller.get_stats_for_period(fc_results['start_timestamp'], fc_results['end_timestamp'])
-        # fc_stats_result = self.calculate_stats(fc_stats)
-        # fc_results['stats'] = fc_stats_result
-
-        # output.update({
-        #     'farmcalendar_results': fc_results,
-        # })
         return output
 
 

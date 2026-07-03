@@ -25,21 +25,14 @@ class FCStressTest(BaseStressTestEval):
         return output
 
     def fc_tasks(self):
-        start_timestamp = datetime.datetime.now().isoformat()
         fc_results = {}
 
-        reg_farms_results = self.fc_register_farms(num_farm=self.num_entries, rps=self.rps)
+        reg_farms_results, farm_ids = self.fc_register_farms(num_farm=self.num_entries, rps=self.rps)
         fc_results.update(reg_farms_results)
 
-        reg_parcels_results = self.fc_register_farm_parcels(num_parcels=self.num_entries, rps=self.rps, farm_ids=reg_farms_results['farm_ids'])
+        reg_parcels_results, parcel_ids = self.fc_register_farm_parcels(num_parcels=self.num_entries, rps=self.rps, farm_ids=farm_ids)
         fc_results.update(reg_parcels_results)
 
-
-        end_timestamp = datetime.datetime.now().isoformat()
-        fc_results.update({
-            'start_timestamp': start_timestamp,
-            'end_timestamp': end_timestamp,
-        })
         return fc_results
 
     def fc_register_farms(self, num_farm, rps):
@@ -51,10 +44,7 @@ class FCStressTest(BaseStressTestEval):
             farm_ids=farm_ids
         )
 
-        results.update({
-            'farm_ids': farm_ids,
-        })
-        return results
+        return results, farm_ids
 
     def task_register_farm(self, task_i, farm_ids):
         url = f'{FARMCALENDAR_BASE_URL}/api/v1/Farm/'
@@ -107,10 +97,7 @@ class FCStressTest(BaseStressTestEval):
             farm_ids=farm_ids, parcel_ids=parcel_ids
         )
 
-        results.update({
-            'parcel_ids': parcel_ids,
-        })
-        return results
+        return results, parcel_ids
 
 
     def task_register_farm_parcel(self, task_i, farm_ids, parcel_ids):
