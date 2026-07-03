@@ -24,12 +24,12 @@ class BaseStressTestEval(BaseEvaluator):
         self.sleep_before_stats = 2
         self.num_entries = 1
         self.rps = 1
-        self.setup_workload_from_postix()
+        self.setup_workload_from_postfix()
         self.health_check_urls = [
         ]
 
 
-    def setup_workload_from_postix(self):
+    def setup_workload_from_postfix(self):
         if self.controller.evaluation_postfix.lower() == 'low':
             self.num_entries = 10
             self.rps = 2
