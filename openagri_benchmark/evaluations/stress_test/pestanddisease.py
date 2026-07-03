@@ -60,11 +60,6 @@ _THREAT_MODEL_DATA = [
 
 
 class PNDStressTest(BaseStressTestEval):
-    PND_RPS = 2
-    NUM_DISEASE = 10
-    NUM_PEST_MODELS = 10
-    NUM_THREAT_MODELS = 5
-    NUM_PARCELS = 5
     PND_GDD_FROM_DATE = '2026-03-20'
     PND_GDD_TO_DATE = '2026-06-17'
 
@@ -73,7 +68,11 @@ class PNDStressTest(BaseStressTestEval):
         self.health_check_urls = [
             PND_BASE_URL + '/docs',
         ]
-
+        self.NUM_DISEASE = self.num_entries
+        self.NUM_PEST_MODELS = self.num_entries
+        # half of number of entries, but awlways at least one
+        self.NUM_THREAT_MODELS = max(1, int(self.num_entries / 2))
+        self.NUM_PARCELS = max(1, int(self.num_entries / 2))
 
     def run(self):
         output = super().run()
@@ -127,7 +126,7 @@ class PNDStressTest(BaseStressTestEval):
     def pnd_setup(self):
         self._pnd_register_and_login()
         self.logger.info(f'PND setup: creating {self.NUM_PARCELS} parcels — POST will return 500 (weather fetch offline), parcels still saved to DB')
-        self.pnd_register_parcels(num_parcels=self.NUM_PARCELS, rps=self.PND_RPS)
+        self.pnd_register_parcels(num_parcels=self.NUM_PARCELS, rps=self.rps)
         self.pnd_parcel_ids = self._pnd_get_parcel_ids(num_parcels=self.NUM_PARCELS)
         found = len([pid for pid in self.pnd_parcel_ids if pid is not None])
         self.logger.info(f'PND setup done: {found}/{self.NUM_PARCELS} parcels ready')
@@ -326,34 +325,34 @@ class PNDStressTest(BaseStressTestEval):
         start_timestamp = datetime.datetime.now().isoformat()
         pnd_results = {}
 
-        reg_disease_results = self.pnd_register_disease(num_disease=self.NUM_DISEASE, rps=self.PND_RPS)
+        reg_disease_results = self.pnd_register_disease(num_disease=self.NUM_DISEASE, rps=self.rps)
         pnd_results.update(reg_disease_results)
 
-        list_disease_results = self.pnd_list_diseases(count=self.NUM_DISEASE, rps=self.PND_RPS)
+        list_disease_results = self.pnd_list_diseases(count=self.NUM_DISEASE, rps=self.rps)
         pnd_results.update(list_disease_results)
 
         parcel_ids = [pid for pid in self.pnd_parcel_ids if pid is not None]
         if parcel_ids:
-            upload_results = self.pnd_upload_data(parcel_ids=parcel_ids, rps=self.PND_RPS)
+            upload_results = self.pnd_upload_data(parcel_ids=parcel_ids, rps=self.rps)
             pnd_results.update(upload_results)
 
         if parcel_ids:
-            get_data_results = self.pnd_get_parcel_data(parcel_ids=parcel_ids, rps=self.PND_RPS)
+            get_data_results = self.pnd_get_parcel_data(parcel_ids=parcel_ids, rps=self.rps)
             pnd_results.update(get_data_results)
 
         disease_id = next((d for d in pnd_results.get('disease_ids', []) if d is not None), None)
         if parcel_ids and disease_id:
-            gdd_results = self.pnd_calculate_gdd(parcel_ids=parcel_ids, disease_id=disease_id, rps=self.PND_RPS)
+            gdd_results = self.pnd_calculate_gdd(parcel_ids=parcel_ids, disease_id=disease_id, rps=self.rps)
             pnd_results.update(gdd_results)
 
         pest_model_id = next((p for p in getattr(self, 'pnd_pest_model_ids', []) if p is not None), None)
         if parcel_ids and pest_model_id:
-            risk_index_results = self.pnd_calculate_risk_index(parcel_ids=parcel_ids, pest_model_id=pest_model_id, rps=self.PND_RPS)
+            risk_index_results = self.pnd_calculate_risk_index(parcel_ids=parcel_ids, pest_model_id=pest_model_id, rps=self.rps)
             pnd_results.update(risk_index_results)
 
         threat_model_id = next((t for t in getattr(self, 'pnd_threat_model_ids', []) if t is not None), None)
         if parcel_ids and threat_model_id:
-            fuzzy_results = self.pnd_fuzzy_risk_calculate(parcel_ids=parcel_ids, threat_model_id=threat_model_id, rps=self.PND_RPS)
+            fuzzy_results = self.pnd_fuzzy_risk_calculate(parcel_ids=parcel_ids, threat_model_id=threat_model_id, rps=self.rps)
             pnd_results.update(fuzzy_results)
 
         end_timestamp = datetime.datetime.now().isoformat()
