@@ -2,8 +2,6 @@ import time
 import datetime
 
 import requests
-import numpy as np
-import threading
 
 
 from openagri_benchmark.conf import (
@@ -36,7 +34,6 @@ class FCStressTest(BaseStressTestEval):
         reg_parcels_results = self.fc_register_farm_parcels(num_parcels=self.num_entries, rps=self.rps, farm_ids=reg_farms_results['farm_ids'])
         fc_results.update(reg_parcels_results)
 
-        # farm_parcel_ids, farm_parcel_request_times =
 
         end_timestamp = datetime.datetime.now().isoformat()
         fc_results.update({
@@ -45,50 +42,28 @@ class FCStressTest(BaseStressTestEval):
         })
         return fc_results
 
-    def fc_register_farms(self, num_farm, rps=2):
-        stagger_interval = 1 / rps
+    def fc_register_farms(self, num_farm, rps):
         farm_ids = [None] * num_farm
-        farm_request_times = [None] * num_farm
 
-        start_timestamp = datetime.datetime.now().isoformat()
-        threads = []
-        for i in range(num_farm):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.fc_register_farm_thread_worker,
-                args=(i, farm_ids, farm_request_times)
-            )
-            thread.daemon = False  # Make sure threads complete
-            thread.start()
-            threads.append(thread)
+        results = self.multithread_task(
+            'register_farm',
+            self.task_register_farm, num_farm, rps,
+            farm_ids=farm_ids
+        )
 
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
-        end_timestamp = datetime.datetime.now().isoformat()
-
-        return {
-            'register_farms_start_timestamp': start_timestamp,
-            'register_farms_end_timestamp': end_timestamp,
+        results.update({
             'farm_ids': farm_ids,
-            'farm_request_times': farm_request_times,
-        }
+        })
+        return results
 
-    def fc_register_farm_thread_worker(self, index, entry_ids, entry_request_times):
-        "running each request on a separated thread, storing result pointer args"
-        self.logger.debug(f'Registering farm {index}')
-        elapsed_time, farm_id = self.task_register_farm(index)
-        entry_ids[index] = farm_id
-        entry_request_times[index] = elapsed_time
-
-    def task_register_farm(self, farm_i):
+    def task_register_farm(self, task_i, farm_ids):
         url = f'{FARMCALENDAR_BASE_URL}/api/v1/Farm/'
 
         data = {
             "status": 1,
             "deleted_at": None,
-            "name": f"Farm {farm_i}",
-            "description": f"Some description for {farm_i}",
+            "name": f"Farm {task_i}",
+            "description": f"Some description for {task_i}",
             "administrator": "Someone",
             "telephone": "123",
             "vatID": "123",
@@ -118,58 +93,37 @@ class FCStressTest(BaseStressTestEval):
             graph = entry_data.get("@graph")
             entry = graph[0]
             entry_id = entry['@id']
-            return elapsed_time, entry_id
+            farm_ids[task_i] = entry_id
+            return elapsed_time
         else:
             response.raise_for_status()
 
     def fc_register_farm_parcels(self, num_parcels, rps, farm_ids):
-        stagger_interval = 1 / rps
         parcel_ids = [None] * num_parcels
-        parcel_request_times = [None] * num_parcels
-        start_timestamp = datetime.datetime.now().isoformat()
-        threads = []
-        for i in range(num_parcels):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.fc_register_farm_parcels_thread_worker,
-                args=(i, farm_ids, parcel_ids, parcel_request_times)
-            )
-            thread.daemon = False  # Make sure threads complete
-            thread.start()
-            threads.append(thread)
 
-        # Wait for all threads to complete
-        for thread in threads:
-            thread.join()
+        results = self.multithread_task(
+            'register_parcel',
+            self.task_register_farm_parcel, num_parcels, rps,
+            farm_ids=farm_ids, parcel_ids=parcel_ids
+        )
 
-        end_timestamp = datetime.datetime.now().isoformat()
-
-        return {
-            'register_parcels_start_timestamp': start_timestamp,
-            'register_parcels_end_timestamp': end_timestamp,
-            'parcel_ids': farm_ids,
-            'parcel_request_times': parcel_request_times,
-        }
+        results.update({
+            'parcel_ids': parcel_ids,
+        })
+        return results
 
 
-    def fc_register_farm_parcels_thread_worker(self, index, farm_ids, entry_ids, entry_request_times):
-        "running each request on a separated thread, storing result pointer args"
-        self.logger.debug(f'Registering parcel {index}')
-        elapsed_time, entry_id = self.task_register_farm_parcel(index, farm_ids)
-        entry_ids[index] = entry_id
-        entry_request_times[index] = elapsed_time
-
-    def task_register_farm_parcel(self, farm_parcel_i, farm_ids):
+    def task_register_farm_parcel(self, task_i, farm_ids, parcel_ids):
         url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmParcels/'
-        farm_id = farm_ids[farm_parcel_i]
-        wkt, center_lat, center_long = self.fc_generate_square_geometry(farm_parcel_i)
+        farm_id = farm_ids[task_i]
+        wkt, center_lat, center_long = self.fc_generate_square_geometry(task_i)
         data = {
             "status": 1,
             "deleted_at": None,
             # "created_at": "2024-11-04T12:51:14.074000Z",
             # "updated_at": "2024-11-04T12:51:14.074000Z",
-            "identifier": f"Parcel {farm_parcel_i}",
-            "description": f"Farm parcel description {farm_parcel_i}",
+            "identifier": f"Parcel {task_i}",
+            "description": f"Farm parcel description {task_i}",
             "validFrom": "2024-11-04T12:51:14.074000Z",
             "validTo": "2024-11-05T12:51:14.074000Z",
             "area": "0.94",
@@ -211,7 +165,8 @@ class FCStressTest(BaseStressTestEval):
             graph = entry_data.get("@graph")
             entry = graph[0]
             entry_id = entry['@id']
-            return elapsed_time, entry_id
+            parcel_ids[task_i] = entry_id
+            return elapsed_time
         else:
             self.logger.error(response.json())
             response.raise_for_status()

@@ -1,3 +1,4 @@
+import threading
 import datetime
 import time
 
@@ -127,6 +128,47 @@ class BaseStressTestEval(BaseEvaluator):
             task_stats_results = self.calculate_stats(task_stats)
             tasks_stats_dict[f'{task_name}_stats'] = task_stats_results
         return tasks_stats_dict
+
+    def multithread_task(self, task_name, task, num_operations, rps, **kwargs):
+        stagger_interval = 1 / rps
+        # disease_ids = [None] * num_operations
+        task_times = [None] * num_operations
+
+        start_timestamp = datetime.datetime.now().isoformat()
+        threads = []
+        for i in range(num_operations):
+            thread = threading.Timer(
+                i * stagger_interval,
+                self._multithread_task_worker,
+                args=(task_name, task, i, task_times),
+                kwargs=kwargs
+            )
+            thread.daemon = False
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+        end_timestamp = datetime.datetime.now().isoformat()
+
+
+        # task_name = 'register_disease'
+        # task_name = task.__name__
+        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, task_times)
+        return result
+
+    def _multithread_task_worker(self, task_name, task, index, task_times, **kwargs):
+        self.logger.debug(f'Running Task {task_name} ({index})')
+        elapsed_time = task(index, **kwargs)
+        task_times[index] = elapsed_time
+
+    def pnd_register_disease_worker(self, index, entry_ids, entry_request_times):
+        "running each request on a separated thread, storing result pointer args"
+        self.logger.debug(f'Registering disease {index}')
+        elapsed_time, disease_id = self.task_register_disease(index)
+        entry_ids[index] = disease_id
+        entry_request_times[index] = elapsed_time
+
 
     def run_service_tasks(self, service_name, service_tasks_func):
         service_results = service_tasks_func()
