@@ -107,19 +107,81 @@ class BenchmarkController(object):
                 f.flush()
 
     def get_stats_for_period(self, start_timestamp, end_timestamp):
+        # self.logger.error(f'- get_stats_for_period: {start_timestamp} - {end_timestamp}...')
         if not self._stats:
+            self.logger.warning(f'No internal stats datastructure available to query for...')
             return {}
         start_dt = datetime.datetime.fromisoformat(start_timestamp)
         end_dt = datetime.datetime.fromisoformat(end_timestamp)
 
         all_stats = self._stats.copy()
-        filter_lambda = lambda item: start_dt <= datetime.datetime.fromisoformat(item[0]) <= end_dt
-        return dict(
-            filter(
-                filter_lambda,
-                all_stats.items()
-            )
-        )
+
+
+        period_stats = {}
+        prev_dt = None
+        prev_stats = None
+        for key, stats in all_stats.items():
+            dt = datetime.datetime.fromisoformat(key)
+            if start_dt <= dt <= end_dt:
+                period_stats[key] = stats
+            elif dt > end_dt:
+                # self.logger.error(f'No more stats for {start_timestamp} - {end_timestamp}. Current stats ({len(period_stats)})')
+                if len(period_stats) == 0:
+                    # self.logger.error(f'No stats registered for {start_timestamp} - {end_timestamp}... checking prev_dt: {prev_dt}')
+                    if prev_dt is not None:
+                        target_dt = start_dt + ((end_dt - start_dt) / 2)
+                        period_stats[target_dt.isoformat()] = self._interpolate_stats(
+                            target_dt=target_dt,
+                            prev_dt=prev_dt,
+                            prev_stats=prev_stats,
+                            next_dt=dt,
+                            next_stats=stats
+                        )
+                    else:
+                        # self.logger.error(f'No prev_dt for {start_timestamp}. No interpolation possible.')
+                        pass
+
+                break
+            prev_dt = dt
+            prev_stats = stats
+        if len(period_stats) == 0:
+            self.logger.error(f'No stat timestamp after {start_timestamp}. Last timestamp was: {prev_dt.isoformat()}')
+
+        return period_stats
+
+
+    def _interpolate_stats(self, target_dt, prev_dt, prev_stats, next_dt, next_stats):
+        # self.logger.error(f'Interpolating for: {target_dt} with start: {prev_dt}. End: {next_dt}')
+        # self.logger.error(f'prev_stats: {prev_stats} . Next stats: {next_stats}')
+
+        ratio = (target_dt - prev_dt) / (next_dt - prev_dt)
+        prev_by_id = {stat["Container"]: stat for stat in prev_stats}
+        next_by_id = {stat["Container"]: stat for stat in next_stats}
+
+        stats = []
+        # go from next, since makes sense to have more new containers in future than pass...
+        for container_id, c_next_stat in next_by_id.items():
+            if container_id in prev_by_id:
+                c_prev_stat = prev_by_id[container_id]
+
+                prev_cpu = float(c_prev_stat['CPUPerc'].rstrip('%'))
+                next_cpu = float(c_next_stat['CPUPerc'].rstrip('%'))
+                prev_mem = float(c_prev_stat['MemPerc'].rstrip('%'))
+                next_mem = float(c_next_stat['MemPerc'].rstrip('%'))
+                container_name = c_next_stat.get('Name', '--')
+
+                cpu_interp = prev_cpu + ((next_cpu - prev_cpu) * ratio)
+                mem_interp = prev_mem + ((next_mem - prev_mem) * ratio)
+                interpolated = {
+                    "Container": container_id,
+                    "Name": container_name,
+                    "CPUPerc": f"{cpu_interp:.2f}%",
+                    "MemPerc": f"{mem_interp:.2f}%",
+                    "Interpolated": True,
+                }
+                stats.append(interpolated)
+
+        return stats
 
     def destroy_containers(self):
         if self.bootstrap_dir is None:
