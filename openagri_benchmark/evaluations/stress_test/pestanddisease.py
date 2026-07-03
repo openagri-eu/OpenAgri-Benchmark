@@ -400,38 +400,16 @@ class PNDStressTest(BaseStressTestEval):
             disease_ids[task_i] = disease_id
             return elapsed_time
         self.logger.warning(f'Register disease returned {response.status_code}: {response.text[:200]}')
-        return elapsed_time, None
+        return elapsed_time
 
     def pnd_list_diseases(self, count, rps):
-        stagger_interval = 1 / rps
-        list_disease_request_times = [None] * count
+        results = self.multithread_task(
+            'list_disease',
+            self.task_list_diseases, count, rps
+        )
+        return results
 
-        start_timestamp = datetime.datetime.now().isoformat()
-        threads = []
-        for i in range(count):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.pnd_list_diseases_worker,
-                args=(i, list_disease_request_times)
-            )
-            thread.daemon = False
-            thread.start()
-            threads.append(thread)
-
-        for thread in threads:
-            thread.join()
-        end_timestamp = datetime.datetime.now().isoformat()
-
-        task_name = 'list_disease'
-        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, list_disease_request_times)
-        return result
-
-    def pnd_list_diseases_worker(self, index, request_times):
-        self.logger.debug(f'Listing diseases ({index})')
-        elapsed_time = self.task_list_diseases()
-        request_times[index] = elapsed_time
-
-    def task_list_diseases(self):
+    def task_list_diseases(self, task_i):
         url = f'{PND_BASE_URL}/api/v1/disease/'
         headers = self.base_headers.copy()
 
@@ -448,40 +426,42 @@ class PNDStressTest(BaseStressTestEval):
         if not data_rows:
             self.logger.warning('No CSV data loaded, skipping data upload')
             return {}
+        num_operations = len(parcel_ids)
+        results = self.multithread_task(
+            'upload_data',
+            self.task_upload_data, num_operations, rps,
+            parcel_ids=parcel_ids,
+            data_rows=data_rows
+        )
 
-        stagger_interval = 1 / rps
-        upload_request_times = [None] * len(parcel_ids)
+        # stagger_interval = 1 / rps
+        # upload_request_times = [None] * len(parcel_ids)
 
-        start_timestamp = datetime.datetime.now().isoformat()
-        threads = []
-        for i, parcel_id in enumerate(parcel_ids):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.pnd_upload_data_worker,
-                args=(i, parcel_id, data_rows, upload_request_times)
-            )
-            thread.daemon = False
-            thread.start()
-            threads.append(thread)
+        # start_timestamp = datetime.datetime.now().isoformat()
+        # threads = []
+        # for i, parcel_id in enumerate(parcel_ids):
+        #     thread = threading.Timer(
+        #         i * stagger_interval,
+        #         self.pnd_upload_data_worker,
+        #         args=(i, parcel_id, data_rows, upload_request_times)
+        #     )
+        #     thread.daemon = False
+        #     thread.start()
+        #     threads.append(thread)
 
-        for thread in threads:
-            thread.join()
-        end_timestamp = datetime.datetime.now().isoformat()
+        # for thread in threads:
+        #     thread.join()
+        # end_timestamp = datetime.datetime.now().isoformat()
 
-        task_name = 'upload_data'
-        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, upload_request_times)
-        result.update({
-            f'{task_name}_parcel_ids': parcel_ids,
-        })
-        return result
+        # task_name = 'upload_data'
+        # result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, upload_request_times)
+        # result.update({
+        #     f'{task_name}_parcel_ids': parcel_ids,
+        # })
+        return results
 
-    def pnd_upload_data_worker(self, index, parcel_id, data_rows, request_times):
-        "running each request on a separated thread, storing result pointer args"
-        self.logger.debug(f'Uploading data for parcel {parcel_id}')
-        elapsed_time = self.task_upload_data(parcel_id, data_rows)
-        request_times[index] = elapsed_time
-
-    def task_upload_data(self, parcel_id, data_rows):
+    def task_upload_data(self, task_i, parcel_ids, data_rows):
+        parcel_id = parcel_ids[task_i]
         url = f'{PND_BASE_URL}/api/v1/data/{parcel_id}/'
         headers = self.base_headers.copy()
 
