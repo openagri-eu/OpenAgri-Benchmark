@@ -383,12 +383,13 @@ class PNDStressTest(BaseStressTestEval):
             thread.join()
         end_timestamp = datetime.datetime.now().isoformat()
 
-        return {
-            'register_disease_start_timestamp': start_timestamp,
-            'register_disease_end_timestamp': end_timestamp,
+
+        task_name = 'register_disease'
+        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, disease_request_times)
+        result.update({
             'disease_ids': disease_ids,
-            'disease_request_times': disease_request_times,
-        }
+        })
+        return result
 
     def pnd_register_disease_worker(self, index, entry_ids, entry_request_times):
         "running each request on a separated thread, storing result pointer args"
@@ -441,11 +442,9 @@ class PNDStressTest(BaseStressTestEval):
             thread.join()
         end_timestamp = datetime.datetime.now().isoformat()
 
-        return {
-            'list_disease_start_timestamp': start_timestamp,
-            'list_disease_end_timestamp': end_timestamp,
-            'list_disease_request_times': list_disease_request_times,
-        }
+        task_name = 'list_disease'
+        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, list_disease_request_times)
+        return result
 
     def pnd_list_diseases_worker(self, index, request_times):
         self.logger.debug(f'Listing diseases ({index})')
@@ -489,12 +488,12 @@ class PNDStressTest(BaseStressTestEval):
             thread.join()
         end_timestamp = datetime.datetime.now().isoformat()
 
-        return {
-            'upload_data_start_timestamp': start_timestamp,
-            'upload_data_end_timestamp': end_timestamp,
-            'upload_data_parcel_ids': parcel_ids,
-            'upload_data_request_times': upload_request_times,
-        }
+        task_name = 'upload_data'
+        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, upload_request_times)
+        result.update({
+            f'{task_name}_parcel_ids': parcel_ids,
+        })
+        return result
 
     def pnd_upload_data_worker(self, index, parcel_id, data_rows, request_times):
         "running each request on a separated thread, storing result pointer args"
@@ -534,12 +533,13 @@ class PNDStressTest(BaseStressTestEval):
             thread.join()
         end_timestamp = datetime.datetime.now().isoformat()
 
-        return {
-            'get_parcel_data_start_timestamp': start_timestamp,
-            'get_parcel_data_end_timestamp': end_timestamp,
-            'get_parcel_data_parcel_ids': parcel_ids,
-            'get_parcel_data_request_times': get_data_request_times,
-        }
+
+        task_name = 'get_parcel_data'
+        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, get_data_request_times)
+        result.update({
+            f'{task_name}_parcel_ids': parcel_ids,
+        })
+        return result
 
     def pnd_get_parcel_data_worker(self, index, parcel_id, request_times):
         self.logger.debug(f'Getting data for parcel {parcel_id}')
@@ -583,12 +583,12 @@ class PNDStressTest(BaseStressTestEval):
             thread.join()
         end_timestamp = datetime.datetime.now().isoformat()
 
-        return {
-            'calculate_gdd_start_timestamp': start_timestamp,
-            'calculate_gdd_end_timestamp': end_timestamp,
-            'calculate_gdd_parcel_ids': parcel_ids,
-            'calculate_gdd_request_times': gdd_request_times,
-        }
+        task_name = 'calculate_gdd'
+        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, gdd_request_times)
+        result.update({
+            f'{task_name}_parcel_ids': parcel_ids,
+        })
+        return result
 
     def pnd_calculate_gdd_worker(self, index, parcel_id, disease_id, request_times):
         self.logger.debug(f'Calculating GDD for parcel {parcel_id}')
@@ -634,12 +634,12 @@ class PNDStressTest(BaseStressTestEval):
             thread.join()
         end_timestamp = datetime.datetime.now().isoformat()
 
-        return {
-            'calculate_risk_index_start_timestamp': start_timestamp,
-            'calculate_risk_index_end_timestamp': end_timestamp,
-            'calculate_risk_index_parcel_ids': parcel_ids,
-            'calculate_risk_index_request_times': risk_index_request_times,
-        }
+        task_name = 'calculate_risk'
+        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, risk_index_request_times)
+        result.update({
+            f'{task_name}_parcel_ids': parcel_ids,
+        })
+        return result
 
     def pnd_calculate_risk_index_worker(self, index, parcel_id, pest_model_id, request_times):
         self.logger.debug(f'Calculating risk index for parcel {parcel_id}')
@@ -685,12 +685,12 @@ class PNDStressTest(BaseStressTestEval):
             thread.join()
         end_timestamp = datetime.datetime.now().isoformat()
 
-        return {
-            'fuzzy_risk_calculate_start_timestamp': start_timestamp,
-            'fuzzy_risk_calculate_end_timestamp': end_timestamp,
-            'fuzzy_risk_calculate_parcel_ids': parcel_ids,
-            'fuzzy_risk_calculate_request_times': fuzzy_risk_request_times,
-        }
+        task_name = 'fuzzy_risk_calculate'
+        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, fuzzy_risk_request_times)
+        result.update({
+            f'{task_name}_parcel_ids': parcel_ids,
+        })
+        return result
 
     def pnd_fuzzy_risk_calculate_worker(self, index, parcel_id, threat_model_id, request_times):
         self.logger.debug(f'Calculating fuzzy risk for parcel {parcel_id}')
