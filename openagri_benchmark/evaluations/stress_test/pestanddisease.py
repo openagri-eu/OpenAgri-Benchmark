@@ -434,30 +434,6 @@ class PNDStressTest(BaseStressTestEval):
             data_rows=data_rows
         )
 
-        # stagger_interval = 1 / rps
-        # upload_request_times = [None] * len(parcel_ids)
-
-        # start_timestamp = datetime.datetime.now().isoformat()
-        # threads = []
-        # for i, parcel_id in enumerate(parcel_ids):
-        #     thread = threading.Timer(
-        #         i * stagger_interval,
-        #         self.pnd_upload_data_worker,
-        #         args=(i, parcel_id, data_rows, upload_request_times)
-        #     )
-        #     thread.daemon = False
-        #     thread.start()
-        #     threads.append(thread)
-
-        # for thread in threads:
-        #     thread.join()
-        # end_timestamp = datetime.datetime.now().isoformat()
-
-        # task_name = 'upload_data'
-        # result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, upload_request_times)
-        # result.update({
-        #     f'{task_name}_parcel_ids': parcel_ids,
-        # })
         return results
 
     def task_upload_data(self, task_i, parcel_ids, data_rows):
@@ -474,39 +450,17 @@ class PNDStressTest(BaseStressTestEval):
         return elapsed_time
 
     def pnd_get_parcel_data(self, parcel_ids, rps):
-        stagger_interval = 1 / rps
-        get_data_request_times = [None] * len(parcel_ids)
+        num_operations = len(parcel_ids)
+        results = self.multithread_task(
+            'get_parcel_data',
+            self.task_get_parcel_data, num_operations, rps,
+            parcel_ids=parcel_ids
+        )
 
-        start_timestamp = datetime.datetime.now().isoformat()
-        threads = []
-        for i, parcel_id in enumerate(parcel_ids):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.pnd_get_parcel_data_worker,
-                args=(i, parcel_id, get_data_request_times)
-            )
-            thread.daemon = False
-            thread.start()
-            threads.append(thread)
+        return results
 
-        for thread in threads:
-            thread.join()
-        end_timestamp = datetime.datetime.now().isoformat()
-
-
-        task_name = 'get_parcel_data'
-        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, get_data_request_times)
-        result.update({
-            f'{task_name}_parcel_ids': parcel_ids,
-        })
-        return result
-
-    def pnd_get_parcel_data_worker(self, index, parcel_id, request_times):
-        self.logger.debug(f'Getting data for parcel {parcel_id}')
-        elapsed_time = self.task_get_parcel_data(parcel_id)
-        request_times[index] = elapsed_time
-
-    def task_get_parcel_data(self, parcel_id):
+    def task_get_parcel_data(self, task_i, parcel_ids):
+        parcel_id = parcel_ids[task_i]
         url = (
             f'{PND_BASE_URL}/api/v1/data'
             f'/parcel/{parcel_id}'
