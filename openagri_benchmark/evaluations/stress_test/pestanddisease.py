@@ -478,38 +478,20 @@ class PNDStressTest(BaseStressTestEval):
         return elapsed_time
 
     def pnd_calculate_gdd(self, parcel_ids, disease_id, rps):
-        stagger_interval = 1 / rps
-        gdd_request_times = [None] * len(parcel_ids)
 
-        start_timestamp = datetime.datetime.now().isoformat()
-        threads = []
-        for i, parcel_id in enumerate(parcel_ids):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.pnd_calculate_gdd_worker,
-                args=(i, parcel_id, disease_id, gdd_request_times)
-            )
-            thread.daemon = False
-            thread.start()
-            threads.append(thread)
 
-        for thread in threads:
-            thread.join()
-        end_timestamp = datetime.datetime.now().isoformat()
+        num_operations = len(parcel_ids)
+        results = self.multithread_task(
+            'calculate_gdd',
+            self.task_calculate_gdd, num_operations, rps,
+            parcel_ids=parcel_ids,
+            disease_id=disease_id
+        )
 
-        task_name = 'calculate_gdd'
-        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, gdd_request_times)
-        result.update({
-            f'{task_name}_parcel_ids': parcel_ids,
-        })
-        return result
+        return results
 
-    def pnd_calculate_gdd_worker(self, index, parcel_id, disease_id, request_times):
-        self.logger.debug(f'Calculating GDD for parcel {parcel_id}')
-        elapsed_time = self.task_calculate_gdd(parcel_id, disease_id)
-        request_times[index] = elapsed_time
-
-    def task_calculate_gdd(self, parcel_id, disease_id):
+    def task_calculate_gdd(self, task_i, parcel_ids, disease_id):
+        parcel_id = parcel_ids[task_i]
         url = (
             f'{PND_BASE_URL}/api/v1/tool/calculate-gdd'
             f'/parcel/{parcel_id}'
