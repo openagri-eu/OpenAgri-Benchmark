@@ -336,19 +336,19 @@ class PNDStressTest(BaseStressTestEval):
             upload_results = self.pnd_upload_data(parcel_ids=parcel_ids, rps=self.rps)
             pnd_results.update(upload_results)
 
-        if parcel_ids:
-            get_data_results = self.pnd_get_parcel_data(parcel_ids=parcel_ids, rps=self.rps)
-            pnd_results.update(get_data_results)
+        # if parcel_ids:
+        #     get_data_results = self.pnd_get_parcel_data(parcel_ids=parcel_ids, rps=self.rps)
+        #     pnd_results.update(get_data_results)
 
-        disease_id = next((d for d in pnd_results.get('disease_ids', []) if d is not None), None)
-        if parcel_ids and disease_id:
-            gdd_results = self.pnd_calculate_gdd(parcel_ids=parcel_ids, disease_id=disease_id, rps=self.rps)
-            pnd_results.update(gdd_results)
+        # disease_id = next((d for d in pnd_results.get('disease_ids', []) if d is not None), None)
+        # if parcel_ids and disease_id:
+        #     gdd_results = self.pnd_calculate_gdd(parcel_ids=parcel_ids, disease_id=disease_id, rps=self.rps)
+        #     pnd_results.update(gdd_results)
 
-        pest_model_id = next((p for p in getattr(self, 'pnd_pest_model_ids', []) if p is not None), None)
-        if parcel_ids and pest_model_id:
-            risk_index_results = self.pnd_calculate_risk_index(parcel_ids=parcel_ids, pest_model_id=pest_model_id, rps=self.rps)
-            pnd_results.update(risk_index_results)
+        # pest_model_id = next((p for p in getattr(self, 'pnd_pest_model_ids', []) if p is not None), None)
+        # if parcel_ids and pest_model_id:
+        #     risk_index_results = self.pnd_calculate_risk_index(parcel_ids=parcel_ids, pest_model_id=pest_model_id, rps=self.rps)
+        #     pnd_results.update(risk_index_results)
 
         threat_model_id = next((t for t in getattr(self, 'pnd_threat_model_ids', []) if t is not None), None)
         if parcel_ids and threat_model_id:
@@ -479,7 +479,6 @@ class PNDStressTest(BaseStressTestEval):
 
     def pnd_calculate_gdd(self, parcel_ids, disease_id, rps):
 
-
         num_operations = len(parcel_ids)
         results = self.multithread_task(
             'calculate_gdd',
@@ -511,38 +510,18 @@ class PNDStressTest(BaseStressTestEval):
         return elapsed_time
 
     def pnd_calculate_risk_index(self, parcel_ids, pest_model_id, rps):
-        stagger_interval = 1 / rps
-        risk_index_request_times = [None] * len(parcel_ids)
+        num_operations = len(parcel_ids)
+        results = self.multithread_task(
+            'calculate_risk',
+            self.task_calculate_risk_index, num_operations, rps,
+            parcel_ids=parcel_ids,
+            pest_model_id=pest_model_id
+        )
 
-        start_timestamp = datetime.datetime.now().isoformat()
-        threads = []
-        for i, parcel_id in enumerate(parcel_ids):
-            thread = threading.Timer(
-                i * stagger_interval,
-                self.pnd_calculate_risk_index_worker,
-                args=(i, parcel_id, pest_model_id, risk_index_request_times)
-            )
-            thread.daemon = False
-            thread.start()
-            threads.append(thread)
+        return results
 
-        for thread in threads:
-            thread.join()
-        end_timestamp = datetime.datetime.now().isoformat()
-
-        task_name = 'calculate_risk'
-        result = self._task_base_result_dict(task_name, start_timestamp, end_timestamp, risk_index_request_times)
-        result.update({
-            f'{task_name}_parcel_ids': parcel_ids,
-        })
-        return result
-
-    def pnd_calculate_risk_index_worker(self, index, parcel_id, pest_model_id, request_times):
-        self.logger.debug(f'Calculating risk index for parcel {parcel_id}')
-        elapsed_time = self.task_calculate_risk_index(parcel_id, pest_model_id)
-        request_times[index] = elapsed_time
-
-    def task_calculate_risk_index(self, parcel_id, pest_model_id):
+    def task_calculate_risk_index(self, task_i, parcel_ids, pest_model_id):
+        parcel_id = parcel_ids[task_i]
         url = (
             f'{PND_BASE_URL}/api/v1/tool/calculate-risk-index'
             f'/weather/{parcel_id}'
