@@ -33,6 +33,9 @@ class FCStressTest(BaseStressTestEval):
         reg_parcels_results, parcel_ids = self.fc_register_farm_parcels(num_parcels=self.num_entries, rps=self.rps, farm_ids=farm_ids)
         fc_results.update(reg_parcels_results)
 
+        filter_parcels_results = self.fc_filter_farm_parcels_by_lat_lon(num_calls=self.num_entries, rps=self.rps, parcel_ids=parcel_ids)
+        fc_results.update(filter_parcels_results)
+
         return fc_results
 
     def fc_register_farms(self, num_farm, rps):
@@ -175,5 +178,40 @@ class FCStressTest(BaseStressTestEval):
 
         return wkt, center_lat, center_long
 
+
+    def fc_filter_farm_parcels_by_lat_lon(self, num_calls, rps, parcel_ids):
+        results = self.multithread_task(
+            'filter_parcels',
+            self.task_filter_parcels, num_calls, rps,
+            parcel_ids=parcel_ids
+        )
+
+        return results
+
+    def task_filter_parcels(self, task_i, parcel_ids):
+        expected_parcel_id = parcel_ids[task_i]
+        url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmParcels/'
+        _, center_lat, center_long = self.fc_generate_square_geometry(task_i)
+        # query_filter = "?contains_point=10%2C40"
+        query_filter = {
+            'contains_point': f'{center_lat},{center_long}'
+        }
+        headers = self.base_headers.copy()
+        # Record start time before the request
+        start_time = time.perf_counter()
+        response = requests.get(url, params=query_filter, headers=headers)
+        # Record end time after the request
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        if response.status_code == 200:
+            entry_data = response.json()
+            graph = entry_data.get("@graph")
+            entry = graph[0]
+            entry_id = entry['@id']
+            assert entry_id == expected_parcel_id, f"Wrong parcel returned when filtering for {task_i}: {entry_id} != {expected_parcel_id}"
+            return elapsed_time
+        else:
+            self.logger.error(response.json())
+            response.raise_for_status()
 
 evaluator = FCStressTest
