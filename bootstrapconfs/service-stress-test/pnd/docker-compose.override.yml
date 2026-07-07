@@ -4,3 +4,5 @@ services:
         ports:
             - "${PDM_SERVICE_PORT}:${PDM_SERVICE_PORT}"
 
+        environment:
+            ENABLE_WEATHER_ENRICHMENT_ON_PARCEL_CREATE: false
