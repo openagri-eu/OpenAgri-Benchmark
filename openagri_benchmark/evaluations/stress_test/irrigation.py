@@ -20,7 +20,7 @@ class IRRStressTest(BaseStressTestEval):
         self.health_check_urls = [
             IRR_BASE_URL + '/docs',
         ]
-        self.NUM_UPLOADS = 5
+        self.NUM_DATASETS = max(1, int(self.num_entries / 2))
 
     def run(self):
         output = super().run()
@@ -80,13 +80,13 @@ class IRRStressTest(BaseStressTestEval):
     def irr_tasks(self):
         irr_results = {}
 
-        upload_results, dataset_ids = self.irr_upload_data(num_uploads=self.NUM_UPLOADS, rps=self.rps)
+        upload_results, dataset_ids = self.irr_upload_data(num_datasets=self.NUM_DATASETS, rps=self.rps)
         irr_results.update(upload_results)
 
-        list_results = self.irr_list_datasets(count=self.NUM_UPLOADS, rps=self.rps)
+        list_results = self.irr_list_datasets(count=self.NUM_DATASETS, rps=self.rps)
         irr_results.update(list_results)
 
-        eto_option_types_results = self.irr_get_eto_option_types(count=self.NUM_UPLOADS, rps=self.rps)
+        eto_option_types_results = self.irr_get_eto_option_types(count=self.NUM_DATASETS, rps=self.rps)
         irr_results.update(eto_option_types_results)
 
         dataset_ids = [d for d in dataset_ids if d is not None]
@@ -105,17 +105,17 @@ class IRRStressTest(BaseStressTestEval):
 
         return irr_results
 
-    def irr_upload_data(self, num_uploads, rps):
+    def irr_upload_data(self, num_datasets, rps):
         data_rows = self._load_irr_csv()
         if not data_rows:
             self.logger.warning('No CSV data loaded, skipping data upload')
-            return {}, [None] * num_uploads
+            return {}, [None] * num_datasets
 
-        dataset_ids = [None] * num_uploads
+        dataset_ids = [None] * num_datasets
 
         results = self.multithread_task(
             'upload_data',
-            self.task_upload_data, num_uploads, rps,
+            self.task_upload_data, num_datasets, rps,
             dataset_ids=dataset_ids,
             data_rows=data_rows
         )
