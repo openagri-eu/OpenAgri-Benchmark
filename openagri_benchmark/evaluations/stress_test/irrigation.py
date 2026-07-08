@@ -86,6 +86,9 @@ class IRRStressTest(BaseStressTestEval):
         list_results = self.irr_list_datasets(count=self.NUM_UPLOADS, rps=self.rps)
         irr_results.update(list_results)
 
+        eto_option_types_results = self.irr_get_eto_option_types(count=self.NUM_UPLOADS, rps=self.rps)
+        irr_results.update(eto_option_types_results)
+
         dataset_ids = [d for d in dataset_ids if d is not None]
         if dataset_ids:
             get_results = self.irr_get_datasets(dataset_ids=dataset_ids, rps=self.rps)
@@ -96,6 +99,9 @@ class IRRStressTest(BaseStressTestEval):
 
             datapoints_results = self.irr_get_irrigation_datapoints(dataset_ids=dataset_ids, rps=self.rps)
             irr_results.update(datapoints_results)
+
+            delete_results = self.irr_delete_datasets(dataset_ids=dataset_ids, rps=self.rps)
+            irr_results.update(delete_results)
 
         return irr_results
 
@@ -149,6 +155,25 @@ class IRRStressTest(BaseStressTestEval):
 
         if response.status_code != 200:
             self.logger.warning(f'List datasets returned {response.status_code}: {response.text[:200]}')
+        return elapsed_time
+
+    def irr_get_eto_option_types(self, count, rps):
+        results = self.multithread_task(
+            'eto_option_types',
+            self.task_get_eto_option_types, count, rps
+        )
+        return results
+
+    def task_get_eto_option_types(self, task_i):
+        url = f'{IRR_BASE_URL}/api/v1/eto/option-types/'
+        headers = self.base_headers.copy()
+
+        start_time = time.perf_counter()
+        response = requests.get(url, headers=headers)
+        elapsed_time = time.perf_counter() - start_time
+
+        if response.status_code != 200:
+            self.logger.warning(f'ETO option types returned {response.status_code}: {response.text[:200]}')
         return elapsed_time
 
     def irr_get_datasets(self, dataset_ids, rps):
@@ -215,6 +240,28 @@ class IRRStressTest(BaseStressTestEval):
 
         if response.status_code != 200:
             self.logger.warning(f'Irrigation datapoints for {dataset_id} returned {response.status_code}: {response.text[:200]}')
+        return elapsed_time
+
+    def irr_delete_datasets(self, dataset_ids, rps):
+        num_operations = len(dataset_ids)
+        results = self.multithread_task(
+            'delete_dataset',
+            self.task_delete_dataset, num_operations, rps,
+            dataset_ids=dataset_ids
+        )
+        return results
+
+    def task_delete_dataset(self, task_i, dataset_ids):
+        dataset_id = dataset_ids[task_i]
+        url = f'{IRR_BASE_URL}/api/v1/dataset/{dataset_id}/'
+        headers = self.base_headers.copy()
+
+        start_time = time.perf_counter()
+        response = requests.delete(url, headers=headers)
+        elapsed_time = time.perf_counter() - start_time
+
+        if response.status_code != 200:
+            self.logger.warning(f'Delete dataset {dataset_id} returned {response.status_code}: {response.text[:200]}')
         return elapsed_time
 
 
