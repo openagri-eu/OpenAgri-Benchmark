@@ -1,0 +1,8 @@
+services:
+
+    weathersrv:
+        ports:
+            - "${WEATHER_SRV_PORT}:${WEATHER_SRV_PORT}"
+
+        environment:
+            GATEKEEPER_URL:

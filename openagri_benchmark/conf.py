@@ -33,6 +33,7 @@ REPORTING_BASE_URL = config('REPORTING_BASE_URL', default='http://localhost:8006
 # Must match the port embedded in STRESS_TEST_CALLBACK_URL on the Reporting service's .env.
 REPORTING_STRESS_TEST_LISTENER_PORT = config('REPORTING_STRESS_TEST_LISTENER_PORT', default=8099, cast=int)
 IRR_BASE_URL = config('IRR_BASE_URL', default='http://localhost:8005')
+WEATHER_BASE_URL = config('WEATHER_BASE_URL', default='http://localhost:8004')
 
 PND_CSV_PATH = os.path.join(SOURCE_DIR, 'data', 'pdm_data_90days.csv')
 IRR_CSV_PATH = os.path.join(SOURCE_DIR, 'data', 'irrigation_data_90days.csv')
