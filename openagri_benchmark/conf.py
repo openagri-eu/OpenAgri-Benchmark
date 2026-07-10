@@ -27,6 +27,11 @@ GATEKEEPER_ADMIN_PASSWORD = config('GATEKEEPER_ADMIN_PASSWORD', default='admin')
 
 FARMCALENDAR_BASE_URL = config('FARMCALENDAR_BASE_URL', default='http://localhost:8002')
 PND_BASE_URL = config('PND_BASE_URL', default='http://localhost:8003')
+REPORTING_BASE_URL = config('REPORTING_BASE_URL', default='http://localhost:8006')
+
+# Port the benchmark's local callback listener binds to (see stress_test/reporting.py).
+# Must match the port embedded in STRESS_TEST_CALLBACK_URL on the Reporting service's .env.
+REPORTING_STRESS_TEST_LISTENER_PORT = config('REPORTING_STRESS_TEST_LISTENER_PORT', default=8099, cast=int)
 
 PND_CSV_PATH = os.path.join(SOURCE_DIR, 'data', 'pdm_data_90days.csv')
 
