@@ -126,6 +126,11 @@ class ReportingStressTest(BaseStressTestEval):
             return time.perf_counter() - start_time
 
         report_id = response.json()['uuid']
+        # Theoretical race: the service could finish the PDF and call back
+        # before we register the Event below, so the callback would find
+        # nothing in `events` and get dropped, forcing a full timeout wait.
+        # Low probability in practice — PDF generation always takes far
+        # longer than these few lines of Python.
         event = threading.Event()
         _ReportCallbackHandler.events[report_id] = event
 
