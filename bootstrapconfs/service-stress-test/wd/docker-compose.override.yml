@@ -1,5 +1,9 @@
 services:
 
+    weathersrv_db:
+        ports:
+        - 27017:27017
+
     weathersrv:
         ports:
             - "${WEATHER_SRV_PORT}:${WEATHER_SRV_PORT}"
