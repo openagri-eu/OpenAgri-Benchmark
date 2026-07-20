@@ -10,3 +10,5 @@ services:
 
         environment:
             GATEKEEPER_URL:
+        volumes:
+            - ./mocked_openmeteo.py:/weather-service/src/external_services/openmeteo.py:ro
