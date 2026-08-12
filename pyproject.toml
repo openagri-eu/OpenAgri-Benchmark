@@ -30,6 +30,7 @@ dev = [
 
 post = [
     "notebook==7.6.0",
+    "seaborn==0.13.2",
 ]
 
 [tool.setuptools]
