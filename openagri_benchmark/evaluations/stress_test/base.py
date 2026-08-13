@@ -1,11 +1,11 @@
-import threading
 import datetime
+import math
+import threading
 import time
 
 import pandas as pd
 import numpy as np
 
-import requests
 
 from openagri_benchmark.conf import (
     GATEKEEPER_BASE_URL,
@@ -25,6 +25,7 @@ class BaseStressTestEval(BaseEvaluator):
         self.sleep_before_stats = 2
         self.num_entries = 1
         self.rps = 1
+        self.min_num_operations = 1
         self.setup_workload_from_postfix()
         self.health_check_urls = [
         ]
@@ -42,6 +43,9 @@ class BaseStressTestEval(BaseEvaluator):
             self.rps = 50
         else:
             return
+
+        #at least 2.5 seconds of duration for each task
+        self.min_num_operations = math.ceil(2.5 * self.rps)
         self.logger.debug(f'Setting up workload for "{self.controller.evaluation_postfix.lower()}". RPS :{self.rps} . Num Entries {self.num_entries}')
 
     def calculate_stats(self, stats):
@@ -128,6 +132,7 @@ class BaseStressTestEval(BaseEvaluator):
         return service_results
 
     def multithread_task(self, task_name, task, num_operations, rps, **kwargs):
+        # num_operations = max(self.min_num_operations, num_operations)
         stagger_interval = 1 / rps
         task_times = [None] * num_operations
 

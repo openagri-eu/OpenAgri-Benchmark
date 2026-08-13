@@ -27,7 +27,7 @@ class FCStressTest(BaseStressTestEval):
     def fc_tasks(self):
         fc_results = {}
 
-        reg_farms_results, farm_ids = self.fc_register_farms(num_farm=self.num_entries, rps=self.rps)
+        reg_farms_results, farm_ids = self.fc_register_farms(num_farm=(self.num_entries // 2), rps=self.rps)
         fc_results.update(reg_farms_results)
 
         reg_parcels_results, parcel_ids = self.fc_register_farm_parcels(num_parcels=self.num_entries, rps=self.rps, farm_ids=farm_ids)
@@ -35,6 +35,24 @@ class FCStressTest(BaseStressTestEval):
 
         filter_parcels_results = self.fc_filter_farm_parcels_by_lat_lon(num_calls=self.num_entries, rps=self.rps, parcel_ids=parcel_ids)
         fc_results.update(filter_parcels_results)
+
+        reg_act_type_results, gen_activity_type_ids, alerts_type_ids, obs_type_ids = self.fc_register_activity_type(
+            num_types=(self.num_entries // 2), rps=self.rps
+        )
+        fc_results.update(reg_act_type_results)
+
+        reg_gen_activity_results = self.fc_register_gen_activity(
+            num_activities=self.num_entries * 2, rps=self.rps, gen_activity_type_ids=gen_activity_type_ids
+        )
+        fc_results.update(reg_gen_activity_results)
+
+        reg_obs_results = self.fc_register_obs(
+            num_activities=self.num_entries * 2, rps=self.rps, parcel_ids=parcel_ids, obs_type_ids=obs_type_ids
+        )
+        fc_results.update(reg_obs_results)
+
+
+
 
         return fc_results
 
@@ -105,7 +123,7 @@ class FCStressTest(BaseStressTestEval):
 
     def task_register_farm_parcel(self, task_i, farm_ids, parcel_ids):
         url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmParcels/'
-        farm_id = farm_ids[task_i]
+        farm_id = farm_ids[task_i % 2]
         wkt, center_lat, center_long = self.fc_generate_square_geometry(task_i)
         data = {
             "status": 1,
@@ -209,6 +227,175 @@ class FCStressTest(BaseStressTestEval):
             entry = graph[0]
             entry_id = entry['@id']
             assert entry_id == expected_parcel_id, f"Wrong parcel returned when filtering for {task_i}: {entry_id} != {expected_parcel_id}"
+            return elapsed_time
+        else:
+            self.logger.error(response.json())
+            response.raise_for_status()
+
+
+    def fc_register_activity_type(self, num_types, rps):
+        activity_type_ids = [None] * num_types
+
+        results = self.multithread_task(
+            'register_activity_type',
+            self.task_register_activity_type, num_types, rps,
+            activity_type_ids=activity_type_ids
+        )
+
+        gen_activity_type_ids = []
+        alerts_type_ids = []
+        obs_type_ids = []
+        for task_i, entry_id in enumerate(activity_type_ids):
+            if task_i % 3 == 0:
+                gen_activity_type_ids.append(entry_id)
+            elif task_i % 3 == 1:
+                alerts_type_ids.append(entry_id)
+            elif task_i % 3 == 2:
+                obs_type_ids.append(entry_id)
+
+        return results, gen_activity_type_ids, alerts_type_ids, obs_type_ids
+
+    def task_register_activity_type(self, task_i, activity_type_ids):
+        url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmCalendarActivityTypes/'
+
+        categories = ['activity', 'alert', 'observation']
+        category = categories[task_i % 3]
+        data = {
+            "@type": "FarmActivityType",
+            "name": f"New Activity Type % {task_i}",
+            "description": 'Some description',
+            "category": category,
+            "background_color": "#007bff",
+            "border_color": "#007bff",
+            "text_color": "#000000",
+        }
+
+        headers = self.base_headers.copy()
+        # Record start time before the request
+        start_time = time.perf_counter()
+        response = requests.post(url, json=data, headers=headers)
+        # Record end time after the request
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+
+        if response.status_code == 201:
+            entry_data = response.json()
+            graph = entry_data.get("@graph")
+            entry = graph[0]
+            entry_id = entry['@id']
+            activity_type_ids[task_i] = entry_id
+            return elapsed_time
+        else:
+            self.logger.error(response.json())
+            response.raise_for_status()
+
+
+
+    def fc_register_gen_activity(self, num_activities, rps, gen_activity_type_ids):
+        results = self.multithread_task(
+            'register_gen_activity',
+            self.task_register_gen_activity, num_activities, rps,
+            gen_activity_type_ids=gen_activity_type_ids
+        )
+
+        return results
+
+    def task_register_gen_activity(self, task_i, gen_activity_type_ids):
+        url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmCalendarActivities/'
+
+        activity_start = datetime.datetime.now() + datetime.timedelta(days=task_i)
+        activity_end = activity_start + datetime.timedelta(hours=1)
+        activity_type_id = gen_activity_type_ids[task_i % len(gen_activity_type_ids)]
+        activity_type_id = activity_type_id.replace(':FarmActivityType:', ':FarmCalendarActivityType:')
+        data = {
+            "@type": "FarmCalendarActivity",
+            "activityType": {
+                "@type": "FarmCalendarActivityType",
+                "@id": activity_type_id
+            },
+            "title": f"new activity {task_i}",
+            "details": f"activity details for {task_i}",
+            "hasStartDatetime": activity_start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "hasEndDatetime": activity_end.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "hasAgriParcel": None,
+            "responsibleAgent": "someone",
+            "usesAgriculturalMachinery": [],
+            "isPartOfActivity": None
+        }
+
+        headers = self.base_headers.copy()
+        # Record start time before the request
+        start_time = time.perf_counter()
+        response = requests.post(url, json=data, headers=headers)
+        # Record end time after the request
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+
+        if response.status_code == 201:
+            return elapsed_time
+        else:
+            self.logger.error(response.json())
+            response.raise_for_status()
+
+    def fc_register_obs(self, num_activities, rps, parcel_ids, obs_type_ids):
+        results = self.multithread_task(
+            'register_obs',
+            self.task_register_obs, num_activities, rps,
+            parcel_ids=parcel_ids, obs_type_ids=obs_type_ids
+        )
+
+        return results
+
+    def task_register_obs(self, task_i, parcel_ids, obs_type_ids):
+        url = f'{FARMCALENDAR_BASE_URL}/api/v1/Observations/'
+
+        activity_start = datetime.datetime.now() + datetime.timedelta(days=task_i)
+        activity_end = activity_start + datetime.timedelta(hours=1)
+
+        parcel_id = parcel_ids[task_i % len(parcel_ids)]
+        parcel_id = parcel_id.replace(':FarmParcel:', ':Parcel:')
+
+        activity_type_id = obs_type_ids[task_i % len(obs_type_ids)]
+        activity_type_id = activity_type_id.replace(':FarmActivityType:', ':FarmCalendarActivityType:')
+
+
+
+        data = {
+            "@type": "Observation",
+            "activityType": {
+                "@type": "FarmCalendarActivityType",
+                "@id": activity_type_id
+            },
+            "title": f"new obs {task_i}",
+            "details": f"activity details for {task_i}",
+            "phenomenonTime": "2026-08-13T00:00:00Z",
+            "hasEndDatetime": activity_end.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "hasAgriParcel": {
+                "@type": "Parcel",
+                "@id": parcel_id
+            },
+            "madeBySensor": {
+                "@type": "Sensor",
+                "name": "some sensor"
+            },
+            "hasResult": {
+                "@type": "QuantityValue",
+                "unit": "liters",
+                "hasValue": f"{task_i} * i"
+            },
+            "observedProperty": "Humidity",
+            "isPartOfActivity": None
+        }
+
+        headers = self.base_headers.copy()
+        # Record start time before the request
+        start_time = time.perf_counter()
+        response = requests.post(url, json=data, headers=headers)
+        # Record end time after the request
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+
+        if response.status_code == 201:
             return elapsed_time
         else:
             self.logger.error(response.json())
