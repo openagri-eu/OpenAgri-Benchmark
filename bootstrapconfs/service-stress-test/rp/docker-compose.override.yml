@@ -1,0 +1,14 @@
+services:
+
+    # makign sure it has the same _db patter as the others services
+    # we need to fix this by commiting change to the available service yml
+    reportingdb:
+        container_name: openagri-bootstrap-deployment-reporting_db-1
+    reporting:
+        ports:
+            - "${REPORTING_SERVICE_PORT}:${REPORTING_SERVICE_PORT}"
+
+        environment:
+            REPORTING_USING_GATEKEEPER: false
+            ENABLE_STRESS_TEST_NOTIFICATIONS: true
+            STRESS_TEST_CALLBACK_URL: http://172.17.0.1:8099/
