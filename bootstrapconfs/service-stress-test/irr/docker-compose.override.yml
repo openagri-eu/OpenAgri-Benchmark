@@ -1,0 +1,8 @@
+services:
+
+    irrigation:
+        ports:
+            - "${IRR_SERVICE_PORT}:${IRR_SERVICE_PORT}"
+
+        environment:
+            USING_GATEKEEPER: false
