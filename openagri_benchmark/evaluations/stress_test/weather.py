@@ -56,7 +56,7 @@ class WDStressTest(BaseStressTestEval):
         get_locations_by_coords_results = self.wd_get_locations_by_coordinates(num_calls=self.num_entries, rps=self.rps)
         wd_results.update(get_locations_by_coords_results)
 
-        add_locations_results = self.wd_add_locations(num_calls=max(1, self.num_entries // 5), rps=self.rps)
+        add_locations_results = self.wd_add_locations(num_calls=max(1, self.num_entries // 2), rps=self.rps)
         wd_results.update(add_locations_results)
 
         # Forecast endpoints
