@@ -27,7 +27,7 @@ class FCStressTest(BaseStressTestEval):
     def fc_tasks(self):
         fc_results = {}
 
-        reg_farms_results, farm_ids = self.fc_register_farms(num_farm=(self.num_entries // 2), rps=self.rps)
+        reg_farms_results, farm_ids = self.fc_register_farms(num_farm=max(1, self.num_entries // 2), rps=self.rps)
         fc_results.update(reg_farms_results)
 
         reg_parcels_results, parcel_ids = self.fc_register_farm_parcels(num_parcels=self.num_entries, rps=self.rps, farm_ids=farm_ids)
@@ -37,7 +37,7 @@ class FCStressTest(BaseStressTestEval):
         fc_results.update(filter_parcels_results)
 
         reg_act_type_results, gen_activity_type_ids, alerts_type_ids, obs_type_ids = self.fc_register_activity_type(
-            num_types=(self.num_entries // 2), rps=self.rps
+            num_types=max(3, self.num_entries // 2), rps=self.rps
         )
         fc_results.update(reg_act_type_results)
 
