@@ -68,9 +68,9 @@ class PNDStressTest(BaseStressTestEval):
         self.health_check_urls = [
             PND_BASE_URL + '/docs',
         ]
-        self.NUM_DISEASE = self.num_entries
-        self.NUM_PEST_MODELS = self.num_entries
         # half of number of entries, but awlways at least one
+        self.NUM_DISEASE = max(1, int(self.num_entries / 2))
+        self.NUM_PEST_MODELS = max(1, int(self.num_entries / 2))
         self.NUM_THREAT_MODELS = max(1, int(self.num_entries / 2))
         self.NUM_PARCELS = max(1, int(self.num_entries / 2))
 
