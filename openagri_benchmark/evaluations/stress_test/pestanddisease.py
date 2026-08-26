@@ -68,9 +68,9 @@ class PNDStressTest(BaseStressTestEval):
         self.health_check_urls = [
             PND_BASE_URL + '/docs',
         ]
-        self.NUM_DISEASE = self.num_entries
-        self.NUM_PEST_MODELS = self.num_entries
         # half of number of entries, but awlways at least one
+        self.NUM_DISEASE = max(1, int(self.num_entries / 2))
+        self.NUM_PEST_MODELS = max(1, int(self.num_entries / 2))
         self.NUM_THREAT_MODELS = max(1, int(self.num_entries / 2))
         self.NUM_PARCELS = max(1, int(self.num_entries / 2))
 
@@ -234,7 +234,7 @@ class PNDStressTest(BaseStressTestEval):
         self.logger.debug(f'Registering Parcel {parcel_i}')
         url = f'{PND_BASE_URL}/api/v1/parcel/'
         data = {
-            "name": _PARCEL_NAMES[parcel_i % len(_PARCEL_NAMES)],
+            "name": f'{_PARCEL_NAMES[parcel_i % len(_PARCEL_NAMES)]} {parcel_i}',
             "latitude": round(44.8 + parcel_i * 0.01, 4),
             "longitude": round(20.4 + parcel_i * 0.01, 4),
         }
@@ -248,7 +248,7 @@ class PNDStressTest(BaseStressTestEval):
             name_to_id = {p['name']: p['id'] for p in parcels if 'name' in p and 'id' in p}
             parcel_ids = []
             for i in range(num_parcels):
-                name = _PARCEL_NAMES[i % len(_PARCEL_NAMES)]
+                name = f'{_PARCEL_NAMES[i % len(_PARCEL_NAMES)]} {i}'
                 pid = name_to_id.get(name)
                 if pid is None:
                     self.logger.warning(f'Parcel "{name}" not found after creation')
