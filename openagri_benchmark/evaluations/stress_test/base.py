@@ -34,11 +34,11 @@ class BaseStressTestEval(BaseEvaluator):
     def setup_workload_from_postfix(self):
 
         if self.controller.evaluation_postfix.lower() == 'medium':
-            self.num_entries = 50
-            self.rps = 10
+            self.num_entries = 90
+            self.rps = 30
         elif self.controller.evaluation_postfix.lower() == 'high':
             self.num_entries = 250
-            self.rps = 50
+            self.rps = 60
         else: # self.controller.evaluation_postfix.lower() == 'low': and default
             self.num_entries = 10
             self.rps = 2
