@@ -51,7 +51,10 @@ class FCStressTest(BaseStressTestEval):
         )
         fc_results.update(reg_obs_results)
 
-
+        list_monthly_activities_results = self.fc_list_montly_calendar_activities(
+            num_calls=self.min_num_operations * 2, rps=self.rps,
+        )
+        fc_results.update(list_monthly_activities_results)
 
 
         return fc_results
@@ -303,7 +306,9 @@ class FCStressTest(BaseStressTestEval):
     def task_register_gen_activity(self, task_i, gen_activity_type_ids):
         url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmCalendarActivities/'
 
-        activity_start = datetime.datetime.now() + datetime.timedelta(days=task_i)
+        activity_start = datetime.datetime.now()
+        activity_start.replace(day=1)
+        activity_start = activity_start + datetime.timedelta(days=int(task_i / 2))
         activity_end = activity_start + datetime.timedelta(hours=1)
         activity_type_id = gen_activity_type_ids[task_i % len(gen_activity_type_ids)]
         activity_type_id = activity_type_id.replace(':FarmActivityType:', ':FarmCalendarActivityType:')
@@ -348,8 +353,9 @@ class FCStressTest(BaseStressTestEval):
 
     def task_register_obs(self, task_i, parcel_ids, obs_type_ids):
         url = f'{FARMCALENDAR_BASE_URL}/api/v1/Observations/'
-
-        activity_start = datetime.datetime.now() + datetime.timedelta(days=task_i)
+        activity_start = datetime.datetime.now()
+        activity_start.replace(day=15)
+        activity_start = activity_start + datetime.timedelta(days=int(task_i / 2))
         activity_end = activity_start + datetime.timedelta(hours=1)
 
         parcel_id = parcel_ids[task_i % len(parcel_ids)]
@@ -400,5 +406,40 @@ class FCStressTest(BaseStressTestEval):
         else:
             self.logger.error(response.json())
             response.raise_for_status()
+
+    def fc_list_montly_calendar_activities(self, num_calls, rps):
+        results = self.multithread_task(
+            'monthly_activities',
+            self.task_list_monthly_calendar_activities, num_calls, rps,
+        )
+
+        return results
+
+    def task_list_monthly_calendar_activities(self, task_i):
+        url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmCalendarActivities/'
+        from_date = datetime.datetime.now().replace(day=1)
+        to_date = from_date.replace(month=(from_date.month % 12) + 1)
+        query_filter = {
+            'fromDate':  from_date.strftime("%Y-%m-%d"),
+            'toDate': to_date.strftime("%Y-%m-%d"),
+        }
+        headers = self.base_headers.copy()
+        # Record start time before the request
+        start_time = time.perf_counter()
+        response = requests.get(url, params=query_filter, headers=headers)
+        # Record end time after the request
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        if response.status_code == 200:
+            entry_data = response.json()
+            graph = entry_data.get("@graph")
+            # self.logger.debug(f'Total montly activity: {len(graph)} on : {response.url}')
+            return elapsed_time
+        else:
+            self.logger.error(response.json())
+            response.raise_for_status()
+
+
+
 
 evaluator = FCStressTest
