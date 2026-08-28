@@ -84,6 +84,11 @@ Alternativelly, if you have a more complex evaluation setup, you may also have n
 
 For more informations, see the example of the [simple_eval.py](./openagri_benchmark/evaluations/simple_eval.py)
 
+# Stress Test Execution
+To run the stress test a script was created, run it passing the workload setting,  as:
+`./stresstest_for_workload.sh [low|medium|high]`
+
+
 # OpenAgri Bootstrap Configurations
 To use the reference setup from the `bootstrapconfs` you just need to copy the contents of a given setup directory inside a newly cloned OpenAgri Bootstrap repository (inside `./bootstrap_sandbox`). This will give you a preconfigured bootstrap repository for the specific scenario.
 
