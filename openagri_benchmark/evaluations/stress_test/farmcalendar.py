@@ -1,5 +1,6 @@
 import time
 import datetime
+import random
 
 import requests
 
@@ -23,6 +24,21 @@ class FCStressTest(BaseStressTestEval):
         output = super().run()
         output.update(self.run_service_tasks('farmcalendar', self.fc_tasks))
         return output
+
+    def _get_current_activities_ids(self):
+        url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmCalendarActivities/'
+        headers = self.base_headers.copy()
+        response = requests.get(url,  headers=headers)
+        entry_ids = []
+        if response.status_code == 200:
+            entry_data = response.json()
+            graph = entry_data.get("@graph")
+            entry_ids = [entry['@id'].split(':')[-1] for entry in graph]
+        else:
+            self.logger.error(response.json())
+            response.raise_for_status()
+
+        return entry_ids
 
     def fc_tasks(self):
         fc_results = {}
@@ -56,6 +72,18 @@ class FCStressTest(BaseStressTestEval):
         )
         fc_results.update(list_monthly_activities_results)
 
+        activities_ids = self._get_current_activities_ids()
+
+        get_activity_results = self.fc_get_activity(
+            num_calls=self.min_num_operations * 2, rps=self.rps,
+            activities_ids=activities_ids
+        )
+        fc_results.update(get_activity_results)
+
+        list_monthly_activities_results = self.fc_list_montly_calendar_activities(
+            num_calls=self.min_num_operations * 2, rps=self.rps,
+        )
+        fc_results.update(list_monthly_activities_results)
 
         return fc_results
 
@@ -293,7 +321,6 @@ class FCStressTest(BaseStressTestEval):
             response.raise_for_status()
 
 
-
     def fc_register_gen_activity(self, num_activities, rps, gen_activity_type_ids):
         results = self.multithread_task(
             'register_gen_activity',
@@ -439,7 +466,31 @@ class FCStressTest(BaseStressTestEval):
             self.logger.error(response.json())
             response.raise_for_status()
 
+    def fc_get_activity(self, num_calls, rps, activities_ids):
+        results = self.multithread_task(
+            'get_activity',
+            self.task_get_activity, num_calls, rps,
+            activities_ids=activities_ids
+        )
 
+        return results
 
+    def task_get_activity(self, task_i, activities_ids):
+        activity_id = activities_ids[task_i % len(activities_ids)]
+        url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmCalendarActivities/{activity_id}'
+        headers = self.base_headers.copy()
+        # Record start time before the request
+        start_time = time.perf_counter()
+        response = requests.get(url,headers=headers)
+        # Record end time after the request
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        if response.status_code == 200:
+            entry_data = response.json()
+            # graph = entry_data.get("@graph")
+            return elapsed_time
+        else:
+            self.logger.error(response.json())
+            response.raise_for_status()
 
 evaluator = FCStressTest
