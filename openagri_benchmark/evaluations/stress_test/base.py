@@ -32,17 +32,16 @@ class BaseStressTestEval(BaseEvaluator):
 
 
     def setup_workload_from_postfix(self):
-        if self.controller.evaluation_postfix.lower() == 'low':
-            self.num_entries = 10
-            self.rps = 2
-        elif self.controller.evaluation_postfix.lower() == 'medium':
+
+        if self.controller.evaluation_postfix.lower() == 'medium':
             self.num_entries = 50
             self.rps = 10
         elif self.controller.evaluation_postfix.lower() == 'high':
             self.num_entries = 250
             self.rps = 50
-        else:
-            return
+        else: # self.controller.evaluation_postfix.lower() == 'low': and default
+            self.num_entries = 10
+            self.rps = 2
 
         #at least 2.5 seconds of duration for each task
         self.min_num_operations = math.ceil(2.5 * self.rps)
