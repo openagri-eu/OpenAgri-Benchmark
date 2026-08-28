@@ -7,8 +7,8 @@ echo "Running with workload: $WORKLOAD"
 source .env
 
 
-stress_tests=("farmcalendar" "pestanddisease" "weather" "reporting")
-conf_dirs=("fc" "pnd" "wd" "rp")
+stress_tests=("farmcalendar" "pestanddisease" "weather" "reporting" "irrigation")
+conf_dirs=("fc" "pnd" "wd" "rp" "irr")
 
 for i in "${!stress_tests[@]}"; do
     service_name="${stress_tests[$i]}"
