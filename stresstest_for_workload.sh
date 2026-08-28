@@ -26,11 +26,11 @@ for i in "${!stress_tests[@]}"; do
     echo "====== Running batch of ${service_name} ($WORKLOAD) stress test (total of 3 per service)..."
     python3 openagri_benchmark/cli.py "stress_test.${service_name}" "$WORKLOAD"
     echo "====== First ${service_name} ($WORKLOAD)  stress test done, waiting $SECONDS_WAIT seconds before next.."
-    # sleep $SECONDS_WAIT
-    # python3 openagri_benchmark/cli.py "stress_test.${service_name}" "$WORKLOAD"
-    # echo "====== Second ${service_name} ($WORKLOAD)  stress test done, waiting $SECONDS_WAIT seconds before next.."
-    # sleep $SECONDS_WAIT
-    # python3 openagri_benchmark/cli.py "stress_test.${service_name}" "$WORKLOAD"
-    # echo "====== All three ${service_name} ($WORKLOAD)  stress test done, waiting $SECONDS_WAIT seconds before next service.."
-    # sleep $SECONDS_WAIT
+    sleep $SECONDS_WAIT
+    python3 openagri_benchmark/cli.py "stress_test.${service_name}" "$WORKLOAD"
+    echo "====== Second ${service_name} ($WORKLOAD)  stress test done, waiting $SECONDS_WAIT seconds before next.."
+    sleep $SECONDS_WAIT
+    python3 openagri_benchmark/cli.py "stress_test.${service_name}" "$WORKLOAD"
+    echo "====== All three ${service_name} ($WORKLOAD)  stress test done, waiting $SECONDS_WAIT seconds before next service.."
+    sleep $SECONDS_WAIT
 done
