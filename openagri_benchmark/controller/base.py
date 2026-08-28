@@ -190,6 +190,21 @@ class BenchmarkController(object):
         compose_script = os.path.join(self.bootstrap_dir, 'run_compose.py')
         subprocess.run(['python3', compose_script, 'down', '-v'], cwd=self.bootstrap_dir, check=True)
 
+    def export_containers_log(self):
+        if self.bootstrap_dir is None:
+            self.logger.debug('No bootstrap dir passed, ignoring bootstrap control')
+            return
+        compose_script = os.path.join(self.bootstrap_dir, 'run_compose.py')
+        log_file_path = os.path.join(self.output_dir, 'containers.log')
+        with open(log_file_path, 'w') as log_file:
+            subprocess.run(
+                ['python3', compose_script, 'logs', '--no-color', '-t'],
+                cwd=self.bootstrap_dir,
+                check=True,
+                stdout=log_file   # stdout goes to the file
+            )
+
+
     def stop_container_stats(self):
         if self.bootstrap_dir is None:
             self.logger.debug('No bootstrap dir passed, ignoring bootstrap control')
@@ -250,6 +265,7 @@ class BenchmarkController(object):
             result['error'] = str(e)
         finally:
             self.stop_container_stats()
+            self.export_containers_log()
             self.destroy_containers()
 
         try:
