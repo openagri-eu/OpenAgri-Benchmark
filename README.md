@@ -4,15 +4,6 @@
 
 A set of toolkits to perform reproducible experiments and evaluations of the performance of the OpenAgri ecosystem of services.
 
-## Repository Structure
-
-* Inside `./openagri_benchmark` is where all the code lives, and where entry point for running any evaluation is: `./openagri_benchmark/cli.py`.
-* Inside `./openagri_benchmark/evaluations` you will find all available evaluators, including the `base.py` containing the `BaseEvaluator`, which you can inherity to create your own evaluator.
-* Inside `./outputs` will you find the directory that is created for every evaluation execution separabed by their id, timestamp and the optional postfix string.
-* In the `./bootstrapconfs` directory you will the specific configurations (or group of configurations) necessary to setup different bootstrap environments as a reference.
-* In the `./bootstrap_sandbox` is where you should clone a fresh copy of the Bootstrap Repository, and into which where you should copy the reference configs. If this is not done, the evaluations won't be able to retrieve real-time statistics from docker.
-* Inside `./openagri_benchmark/postprocessing` you will find Jupyter notebooks for running post-processing on the evaluations executed.
-
 ## Setup
 Before running make sure to use use Python 3.10.12 or above. Also, you should use a venv when doing this.
 
@@ -21,14 +12,26 @@ To install this library you should clone it locally, then inside the cloned dire
 
 This will install all libraries and requirements, and will make sure that the benchmark repository is installed.
 
-All the commands for evaluation of the reproducible experiments are to be executed from within this directory.
+Afterwards, it is necessary to run the `./setup_sandbox.sh` script, which will clone the Bootstrap Repository inside the `./bootstrap_sandbox` directory. This is necessery to allow control of the service docker containers and their performance monitoring. That is, after the script clones the Bootstrap Repository, you should be able to find its `docker-compose.yml` in the following path `./bootstrap_sandbox/OpenAgri-Bootstrap-Deployment/docker-compos.yml`
+
+
+## Repository Structure
+
+All the commands for evaluation of the reproducible experiments are to be executed from within the root directory of this project.
+
+* Inside `./openagri_benchmark` is where all the code lives, and where entry point for running any evaluation is: `./openagri_benchmark/cli.py`.
+* Inside `./openagri_benchmark/evaluations` you will find all available evaluators, including the `base.py` containing the `BaseEvaluator`, which you can inherity to create your own evaluator.
+* Inside `./outputs` will you find the directory that is created for every evaluation execution separabed by their id, timestamp and the optional postfix string.
+* In the `./bootstrapconfs` directory you will the specific configurations (or group of configurations) necessary to setup different bootstrap environments as a reference.
+* In the `./bootstrap_sandbox` is where the `./setup_sandbox.sh` script will clone a fresh copy of the Bootstrap Repository. This directory is where you can change the deployment configurations to manually setup a evaluation. If this setup is not done, the evaluations won't be able to retrieve real-time statistics from docker.
+* Inside `./openagri_benchmark/postprocessing` you will find Jupyter notebooks for running post-processing on the evaluations executed.
 
 ### Setting up Configurations (.env file)
 You'll need to setup the environment variables in order to connect with an existing running setup of OpenAgri Bootstrap: First copy the `example.env` file into a new file called `.env`, and replace the values according to the location, and admin user details of your OpenAgri Bootstrap configuration.
 
 You may also change the `OUTPUTS_DIR` to the full path of any directory in your machine. By defaul this will be set to the `./outputs` directory inside the repository.
 
-If you wish to have real-time statistics from docker (CPU, Mem, etc..) then you also need to set `BOOTSTRAP_DIR` to the full path to your fresly cloned Bootstrap repository within `./bootstrap_sandbox` directory.
+If you wish to have real-time statistics from docker (CPU, Mem, etc..) then you also need to set `BOOTSTRAP_DIR` to the full path to your fresly cloned Bootstrap repository within `./bootstrap_sandbox` directory. By default this is already set to the exact location where the Bootstrap repository was cloned by `setup_sandbox.sh` script.
 
 ## Running
 A simple CLI is available to run one of the existing evaluations within the linked OpenAgri Bootstrap setup (environment variables): `openagri_benchmark/cli.py`.

@@ -11,7 +11,8 @@ POSTPROCESSING_INPUT_DIR = os.path.join(SOURCE_DIR, 'postprocessing', 'inputs')
 HEALTHCHECK_TIMEOUT = config('HEALTHCHECK_TIMEOUT', default=20, cast=int)
 STATS_INTERVAL_SECONDS = config('STATS_INTERVAL_SECONDS', default=1, cast=int)
 
-BOOTSTRAP_DIR = config('BOOTSTRAP_DIR', default=None)
+BOOTSTRAP_DIR = config('BOOTSTRAP_DIR', default=os.path.join(PROJECT_ROOT, 'bootstrap_sandbox', 'OpenAgri-Bootstrap-Deployment'))
+BOOTSTRAP_CONFIGS_DIR = config('BOOTSTRAP_CONFIGS_DIR', default=os.path.join(PROJECT_ROOT, 'bootstrapconfs'))
 
 OUTPUTS_DIR = config('OUTPUTS_DIR', default=DEFAULT_OUTPUTS_DIR)
 
