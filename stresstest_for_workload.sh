@@ -3,6 +3,12 @@
 WORKLOAD=$1
 SECONDS_WAIT=3
 
+
+if ! docker compose version &> /dev/null; then
+    echo "Error: docker compose command not available. Please ensure Docker Compose is installed."
+    exit 1
+fi
+
 echo "Running with workload: $WORKLOAD"
 source .env
 
