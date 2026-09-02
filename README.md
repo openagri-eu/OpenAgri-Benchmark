@@ -12,6 +12,8 @@ To install this library you should clone it locally, then inside the cloned dire
 
 This will install all libraries and requirements, and will make sure that the benchmark repository is installed.
 
+### Bootstrap Clone on Sandbox dir
+
 Afterwards, it is necessary to run the `./setup_sandbox.sh` script, which will clone the Bootstrap Repository inside the `./bootstrap_sandbox` directory. This is necessery to allow control of the service docker containers and their performance monitoring. That is, after the script clones the Bootstrap Repository, you should be able to find its `docker-compose.yml` in the following path `./bootstrap_sandbox/OpenAgri-Bootstrap-Deployment/docker-compos.yml`
 
 
