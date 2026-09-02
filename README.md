@@ -31,7 +31,16 @@ You'll need to setup the environment variables in order to connect with an exist
 
 You may also change the `OUTPUTS_DIR` to the full path of any directory in your machine. By defaul this will be set to the `./outputs` directory inside the repository.
 
-If you wish to have real-time statistics from docker (CPU, Mem, etc..) then you also need to set `BOOTSTRAP_DIR` to the full path to your fresly cloned Bootstrap repository within `./bootstrap_sandbox` directory. By default this is already set to the exact location where the Bootstrap repository was cloned by `setup_sandbox.sh` script.
+By default `BOOTSTRAP_DIR` variable is already set to the exact location where the Bootstrap repository was cloned by `setup_sandbox.sh` script. If you wish to use another location, than you must change this variable to point to the absolute path to that location where you cloned the Bootstrap repository. This variable is necessary to ensure real-time statistics from docker (CPU, Mem, etc..).
+
+## Setting Up Evaluation Deployment Configurations
+Insire the `./bootstrapconfs` there are multiple pre-defined deployment configurations setups for the Bootstrap sandbox.
+Before running an evaluation, you can manually edit the sandbox bootstrap configurations, or you can use the python script that will copy these existing configuration setups for you:
+`openagri_benchmark/clean_setup_sandbox.py "a_bootstrapconfs_sub_directory"`.
+
+For instance,  `openagri_benchmark/clean_setup_sandbox.py "service-stress-test/fc"` will override the bootstrap sandbox config with the files located in the `bootstrapconfs/service-stress-test/fc` directory.
+This setup script is already automatically called by the `stress_test_for_workload.sh` script to a more automated execution of this specific evaluation.
+
 
 ## Running
 A simple CLI is available to run one of the existing evaluations within the linked OpenAgri Bootstrap setup (environment variables): `openagri_benchmark/cli.py`.

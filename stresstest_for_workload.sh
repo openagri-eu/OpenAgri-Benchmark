@@ -10,6 +10,7 @@ source .env
 stress_tests=("weather" "farmcalendar" "pestanddisease" "reporting" "irrigation")
 conf_dirs=("wd" "fc" "pnd" "rp" "irr")
 
+
 for i in "${!stress_tests[@]}"; do
     service_name="${stress_tests[$i]}"
     conf_dir="${conf_dirs[$i]}"
