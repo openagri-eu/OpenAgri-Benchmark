@@ -85,6 +85,11 @@ class FCStressTest(BaseStressTestEval):
         )
         fc_results.update(list_monthly_activities_results)
 
+        register_crops, crops_ids = self.fc_register_farm_crop(
+            num_crops=max(self.min_num_operations, self.num_entries), rps=self.rps, parcel_ids=parcel_ids
+        )
+        fc_results.update(register_crops)
+
         return fc_results
 
     def fc_register_farms(self, num_farm, rps):
@@ -492,5 +497,57 @@ class FCStressTest(BaseStressTestEval):
         else:
             self.logger.error(response.json())
             response.raise_for_status()
+
+    def fc_register_farm_crop(self, num_crops, rps, parcel_ids):
+        crops_ids = [None] * num_crops
+        results = self.multithread_task(
+            'register_crop',
+            self.task_register_farm_crop, num_crops, rps,
+            parcel_ids=parcel_ids, crops_ids=crops_ids
+        )
+
+        return results, crops_ids
+
+    def task_register_farm_crop(self, task_i, parcel_ids, crops_ids):
+        url = f'{FARMCALENDAR_BASE_URL}/api/v1/FarmCrops/'
+        parcel_id = parcel_ids[task_i % len(parcel_ids)]
+        parcel_id = parcel_id.replace(':FarmParcel:', ':Parcel:')
+
+        data = {
+            "status": 1,
+            "invalidatedAtTime": None,
+            "name": f"Some Crop {task_i}",
+            "description": "some descr",
+            "hasAgriParcel": {
+                "@type": "Parcel",
+                "@id": parcel_id
+            },
+            "cropSpecies": {
+                "@type": "CropType",
+                "name": "Some species {task_i}",
+                "variety": "Some variety {task_i}"
+            },
+            "growth_stage": "bulb"
+        }
+        headers = self.base_headers.copy()
+        # Record start time before the request
+        start_time = time.perf_counter()
+        response = requests.post(url, json=data, headers=headers)
+        # Record end time after the request
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+
+        if response.status_code == 201:
+            entry_data = response.json()
+            graph = entry_data.get("@graph")
+            entry = graph[0]
+            entry_id = entry['@id']
+            crops_ids[task_i] = entry_id
+            return elapsed_time
+        else:
+            self.logger.error(response.json())
+            response.raise_for_status()
+
+
 
 evaluator = FCStressTest

@@ -29,7 +29,7 @@ for i in "${!stress_tests[@]}"; do
     python3 openagri_benchmark/cli.py "stress_test.${service_name}" "$WORKLOAD"
     echo "====== First ${service_name} ($WORKLOAD)  stress test done, waiting $SECONDS_WAIT seconds before next.."
     sleep $SECONDS_WAIT
-    python3 openagri_benchmark/cli.py "stress_gtstest.${service_name}" "$WORKLOAD"
+    python3 openagri_benchmark/cli.py "stress_test.${service_name}" "$WORKLOAD"
     echo "====== Second ${service_name} ($WORKLOAD)  stress test done, waiting $SECONDS_WAIT seconds before next.."
     sleep $SECONDS_WAIT
     python3 openagri_benchmark/cli.py "stress_test.${service_name}" "$WORKLOAD"
