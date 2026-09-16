@@ -20,7 +20,7 @@ class IRRStressTest(BaseStressTestEval):
         self.health_check_urls = [
             IRR_BASE_URL + '/docs',
         ]
-        self.NUM_DATASETS = max(1, int(self.num_entries / 2))
+        self.NUM_DATASETS = max(self.min_num_operations, int(self.num_entries / 2))
 
     def run(self):
         output = super().run()
