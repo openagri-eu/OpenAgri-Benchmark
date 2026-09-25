@@ -86,9 +86,6 @@ class IRRStressTest(BaseStressTestEval):
         list_results = self.irr_list_datasets(count=self.NUM_DATASETS, rps=self.rps)
         irr_results.update(list_results)
 
-        eto_option_types_results = self.irr_get_eto_option_types(count=self.NUM_DATASETS, rps=self.rps)
-        irr_results.update(eto_option_types_results)
-
         dataset_ids = [d for d in dataset_ids if d is not None]
         if dataset_ids:
             get_results = self.irr_get_datasets(dataset_ids=dataset_ids, rps=self.rps)
@@ -155,25 +152,6 @@ class IRRStressTest(BaseStressTestEval):
 
         if response.status_code != 200:
             self.logger.warning(f'List datasets returned {response.status_code}: {response.text[:200]}')
-        return elapsed_time
-
-    def irr_get_eto_option_types(self, count, rps):
-        results = self.multithread_task(
-            'eto_option_types',
-            self.task_get_eto_option_types, count, rps
-        )
-        return results
-
-    def task_get_eto_option_types(self, task_i):
-        url = f'{IRR_BASE_URL}/api/v1/eto/option-types/'
-        headers = self.base_headers.copy()
-
-        start_time = time.perf_counter()
-        response = requests.get(url, headers=headers)
-        elapsed_time = time.perf_counter() - start_time
-
-        if response.status_code != 200:
-            self.logger.warning(f'ETO option types returned {response.status_code}: {response.text[:200]}')
         return elapsed_time
 
     def irr_get_datasets(self, dataset_ids, rps):
