@@ -1,3 +1,4 @@
+import inspect
 import datetime
 import json
 import os
@@ -64,9 +65,13 @@ class BaseUseCase(object):
             'proc_time': 0
         }
         steps_results = {}
-        for step, task_scheduling_op in self.steps.items():
+        for step, step_details in self.steps.items():
+            step_name = step_details['name']
+            task_stats = {'step_name': step_name}
+
+            task_scheduling_op = step_details['func']
             task_scheduling = task_scheduling_op()
-            task_stats = self.get_stats_for_task_scheduling(task_scheduling)
+            task_stats.update(self.get_stats_for_task_scheduling(task_scheduling))
             steps_results[step] = task_stats
             totals['proc_energy'] += task_stats['energy']
             totals['proc_time'] += task_stats['duration']
@@ -80,10 +85,48 @@ class BaseUseCase(object):
         }
         return results
 
+    @classmethod
+    def get_markdown_of_usecase_steps(cls, results):
+        # ---- Header: class name + class docstring ----
+        title = f'# {cls.__name__}\n'
+        desc = (inspect.getdoc(cls) or '').strip()
+        full_md_text = title + '\n' + desc + '\n\n' if desc else title + '\n'
+        for step_i, step_dict in results['steps'].items():
+            title = f'## {step_i}: {step_dict["step_name"]}\n'
+            # tasks_desc = [v['description'] for v in step_dict['scheduling']]
+            # scheduling = '\n'.join(tasks_desc)
+            # print(f'{scheduling}\n\n')
+
+            headers = ["Service", "Task", "Repetition", "Description"]
+
+            md_table = '\n'
+            md_table += ("| " + " | ".join(headers) + " |" + "\n")
+            md_table += ("|" + "|".join(["---"] * len(headers)) + "|" + "\n")
+
+            for entry in step_dict["scheduling"]:
+                row = [
+                    entry["service"],
+                    entry["task"],
+                    str(entry["repetition"]),
+                    entry["description"],
+                ]
+                md_table += ("| " + " | ".join(row) + " |" + '\n')
+
+            step_text = title + md_table + "\n"
+            full_md_text += step_text
+        return full_md_text
 
 
+class UseCaseA(BaseUseCase):
+    """
+        Use Case A: Integrated crop-protection and pesticide use reporting for vineyards (Farm Calendar, Pest and Disease Management, Weather Service)
 
-class UseCase1(BaseUseCase):
+        A micro SME with expertise in ICT  is located in a rural area in Greece and wants to get into the smart agriculture business. They decided to collaborate with local farm advisors and to offer digital services including recording of farm management practices, decision support on crop protection and reporting about pesticides use. They have a new contract with a local farmers association cultivating vineyards.
+        The farmers association has 2 members/farmers and each farmer manages from 1-5 parcels. Each parcel covers an area from 1-5 hectares.
+        For grapevines, the “cultivation period” usually means the period from budbreak to harvest. In most wine-grape and table-grape regions, it lasts about: 150–200 days. In Mediterranean climates, grapevines often start active growth around March–April and are harvested around August–September, depending on variety, altitude, irrigation, and intended use
+        The initial date is set for the last day of February (one day to setup all the services and register parcels, etc..)
+        and the final date is set for first day of November, after the harvest and reporting.
+    """
 
     def __init__(self, base_workload, deployment_setup, tasks_profiling_id):
         init = datetime.date(2026, 2, 28)  # setup only, one day before March–April starts
@@ -93,14 +136,38 @@ class UseCase1(BaseUseCase):
         self.parcels_per_farm = 5
         self.parcels = self.farms * self.parcels_per_farm  # 10
         self.steps = {
-            1: self.farm_parcel_and_crop_creation_step,
-            2: self.march_april_budbreak_weed_first_disease_monitoring_step,
-            3: self.april_may_shoot_thinning_sucker_removal_canopy_management_step,
-            4: self.may_june_shoot_positioning_flowering_disease_protection_step,
-            5: self.june_july_fruit_set_leaf_removal_cluster_thinning_irrigation_step,
-            6: self.july_august_canopy_trimming_veraison_pest_disease_step,
-            7: self.august_september_ripeness_final_irrigation_harvest_planning_step,
-            8: self.september_october_harvest_and_reporting_step,
+            1: {
+                'name': '1Day-Feb',
+                'func': self.farm_parcel_and_crop_creation_step,
+            },
+            2: {
+                'name': 'March-April',
+                'func': self.march_april_budbreak_weed_first_disease_monitoring_step,
+            },
+            3: {
+                'name': 'April-May',
+                'func': self.april_may_shoot_thinning_sucker_removal_canopy_management_step,
+            },
+            4: {
+                'name': 'May-June',
+                'func': self.may_june_shoot_positioning_flowering_disease_protection_step,
+            },
+            5: {
+                'name': 'June-July',
+                'func': self.june_july_fruit_set_leaf_removal_cluster_thinning_irrigation_step,
+            },
+            6: {
+                'name': 'July-August',
+                'func': self.july_august_canopy_trimming_veraison_pest_disease_step,
+            },
+            7: {
+                'name': 'August-September',
+                'func': self.august_september_ripeness_final_irrigation_harvest_planning_step,
+            },
+            8: {
+                'name': 'September-October',
+                'func': self.september_october_harvest_and_reporting_step,
+            },
         }
 
     def farm_parcel_and_crop_creation_step(self):

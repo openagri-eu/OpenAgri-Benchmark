@@ -516,3 +516,91 @@ def create_task_profiling_json(df, profiling_id, setup_devices):
     with open(profiling_file_path, 'w') as f:
         json.dump(tasks_profile, f, indent=4)
     return profiling_file_path
+
+
+
+def plot_use_case_processing_energy_by_step(results_by_setup, use_case):
+    """
+    Plot processing energy per step for one or more setups.
+    Legend is placed below the x-axis labels.
+
+    Parameters
+    ----------
+    results_by_setup : dict
+        Mapping of setup name -> simulation output dict (with a "steps" key).
+    use_case : str
+        Use case title.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
+    """
+    records = []
+    for setup_name, result in results_by_setup.items():
+        for step_id, step in result["steps"].items():
+            records.append({
+                "setup": setup_name,
+                "step_id": int(step_id),
+                "step_name": step["step_name"],
+                "energy_wh": step["energy"],
+                "duration_s": step["duration"],
+            })
+
+    df = pd.DataFrame(records).sort_values(["setup", "step_id"]).reset_index(drop=True)
+    df["label"] = df["step_id"].astype(str) + ". " + df["step_name"]
+
+    label_order = (
+        df.drop_duplicates("step_id")
+          .sort_values("step_id")["label"]
+          .tolist()
+    )
+    df["label"] = pd.Categorical(df["label"], categories=label_order, ordered=True)
+
+    # ---- Plot ----
+    sns.set_theme(style="whitegrid", context="talk")
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    sns.lineplot(
+        data=df,
+        x="label",
+        y="energy_wh",
+        hue="setup",
+        marker="o",
+        linewidth=2.5,
+        ax=ax,
+    )
+
+    for _, row in df.iterrows():
+        ax.annotate(
+            f"{row['energy_wh']:.2f}",
+            xy=(row["label"], row["energy_wh"]),
+            xytext=(0, 8),
+            textcoords="offset points",
+            ha="center",
+            fontsize=9,
+        )
+
+    ax.set_title(
+        f"Processing Energy Consumption Throughout Use Case {use_case}",
+        fontsize=16, pad=15,
+    )
+    ax.set_xlabel("", fontsize=13)
+    ax.set_ylabel("Processing Energy (Wh)", fontsize=13)
+    plt.xticks(rotation=55, ha="right")
+    ax.set_ylim(0, df["energy_wh"].max() * 1.2)
+
+    sns.despine()
+    fig.tight_layout()
+
+    # ---- Move legend below the x-axis labels ----
+    sns.move_legend(
+        ax,
+        loc="lower center",
+        bbox_to_anchor=(0.5, -1.3),
+        title="Deployment Setup",
+        frameon=True,
+        ncol=len(results_by_setup),
+    )
+
+    return fig, ax
