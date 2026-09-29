@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 
@@ -9,9 +10,11 @@ from openagri_benchmark.conf import (
 
 class BaseUseCase(object):
 
-    def __init__(self, deployment_setup, init_datetime, end_datatime, tasks_profiling_id):
+    def __init__(self, base_workload, deployment_setup, init_datetime, end_datatime, tasks_profiling_id):
+        self.workload = base_workload
         self.deployment_setup = deployment_setup
         self.init_datetime = init_datetime
+        self.current_datetime = init_datetime
         self.end_datetime = end_datatime
         self.total_hours = (self.end_datetime - self.init_datetime).total_seconds() / 3600
         self.tasks_profiling = self.load_task_profile(tasks_profiling_id)
@@ -22,6 +25,7 @@ class BaseUseCase(object):
         profiling_file_path = os.path.join(POSTPROCESSING_TASK_PROFILES_DIR, f'{tasks_profiling_id}.json')
         with open(profiling_file_path, 'r') as f:
             return json.load(f)
+
 
     def get_stats_for_task_scheduling(self, task_scheduling):
         total_energy = 0
@@ -81,8 +85,13 @@ class BaseUseCase(object):
 
 class UseCase1(BaseUseCase):
 
-    def __init__(self, deployment_setup, init_datetime, end_datatime,  tasks_profiling_id):
-        super().__init__(deployment_setup, init_datetime, end_datatime, tasks_profiling_id)
+    def __init__(self, base_workload, deployment_setup, tasks_profiling_id):
+        init = datetime.date(2026, 2, 28)  # setup only, one day before March–April starts
+        end = datetime.date(2026, 11, 1)   # after September–October (harvest + reporting)
+        super().__init__(base_workload, deployment_setup, init, end, tasks_profiling_id)
+        self.farms = 2
+        self.parcels_per_farm = 5
+        self.parcels = self.farms * self.parcels_per_farm  # 10
         self.steps = {
             1: self.farm_parcel_and_crop_creation_step,
             2: self.march_april_budbreak_weed_first_disease_monitoring_step,
@@ -95,89 +104,47 @@ class UseCase1(BaseUseCase):
         }
 
     def farm_parcel_and_crop_creation_step(self):
-        workload = 'low'
         task_scheduling = []
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_farm',
-            'workload': workload,
-            'repetition': 2,
+            'workload': self.workload,
+            'repetition': self.farms,
             'description': 'Register one farm per farmer account.',
         })
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_parcel',
-            'workload': workload,
-            'repetition': 10,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Register 5 parcel per farm.',
         })
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_crop',
-            'workload': workload,
-            'repetition': 10,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Register some grapevine crops for each parcel.',
         })
+        # New activity/observation types registered for this use case (repetition = total count):
+        #   March–April        (1): weed control
+        #   June–July          (2): leaf removal, cluster thinning
+        #   July–August        (1): canopy trimming
+        #   August–September   (1): harvest planning
+        #   September–October  (1): harvest
+        #   ─────────────────────────────────────────────────────────────────────────────
+        #   Total              (6)
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_activity_type',
-            'workload': workload,
-            'repetition': 3,
-            'description': 'Define activity types for march_april period.',
-        })
-        task_scheduling.append({
-            'service': 'farmcalendar',
-            'task': 'register_activity_type',
-            'workload': workload,
-            'repetition': 3,
-            'description': 'Define observation types for april_may period.',
-        })
-        task_scheduling.append({
-            'service': 'farmcalendar',
-            'task': 'register_activity_type',
-            'workload': workload,
-            'repetition': 1,
-            'description': 'Define observation types for may_june period.',
-        })
-        task_scheduling.append({
-            'service': 'farmcalendar',
-            'task': 'register_activity_type',
-            'workload': workload,
-            'repetition': 4,
-            'description': 'Define activity types for june_july period.',
-        })
-        task_scheduling.append({
-            'service': 'farmcalendar',
-            'task': 'register_activity_type',
-            'workload': workload,
-            'repetition': 3,
-            'description': 'Define activity types for july_august period.',
-        })
-        task_scheduling.append({
-            'service': 'farmcalendar',
-            'task': 'register_activity_type',
-            'workload': workload,
-            'repetition': 3,
-            'description': 'Define activity types for august_september period.',
-        })
-        task_scheduling.append({
-            'service': 'farmcalendar',
-            'task': 'register_activity_type',
-            'workload': workload,
-            'repetition': 1,
-            'description': 'Define activity types for september_october period.',
+            'workload': self.workload,
+            'repetition': 6,
+            'description': 'Creating new generic activity types specific for the use case.',
         })
         return task_scheduling
 
 
     def march_april_budbreak_weed_first_disease_monitoring_step(self):
-        workload = 'low'
-
-        # Reduced simulation workload: 2 farms, 5 parcels each => 10 parcels total
-        farms = 2
-        parcels_per_farm = 5
-        parcels = farms * parcels_per_farm  # 10
-
         # March–April period length (31 + 30 days)
         days = 61
 
@@ -186,60 +153,53 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'weather',
             'task': 'get_daily_forecast',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily weather forecast per parcel for budbreak and disease-risk context.',
         })
 
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_gdd',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily growing-degree-day calculation per parcel to track budbreak progression.',
         })
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_risk',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily pest/disease infestation risk query per parcel for first disease monitoring.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record budbreak monitoring observation on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record realised weed control activity on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record first disease monitoring observation on each parcel.',
         })
 
         return task_scheduling
 
     def april_may_shoot_thinning_sucker_removal_canopy_management_step(self):
-        workload = 'low'
-
-        # Reduced simulation workload: 2 farms, 5 parcels each => 10 parcels total
-        farms = 2
-        parcels_per_farm = 5
-        parcels = farms * parcels_per_farm  # 10
-
         # Phenology/shoot observations during active growth, roughly weekly per parcel
         obs_rounds = 8  # ~one monitoring round per week over the period
 
@@ -251,71 +211,71 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'weather',
             'task': 'get_daily_forecast',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily weather forecast per parcel to guide canopy management timing.',
         })
 
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_gdd',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily growing-degree-day calculation per parcel to track vine development.',
         })
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_risk',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily pest/disease infestation risk query per parcel during early canopy growth.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels * obs_rounds,
+            'workload': self.workload,
+            'repetition': self.parcels * obs_rounds,
             'description': 'Record shoot development / phenology stage observation on each parcel during active growth.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record early canopy assessment observation on each parcel (density, vigor, light penetration).',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record any early disease/pest symptoms noticed during manual canopy work on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels,        # shoot thinning: once per parcel per season
+            'workload': self.workload,
+            'repetition': self.parcels,        # shoot thinning: once per parcel per season
             'description': 'Record realised shoot thinning activity on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels * 2,    # sucker removal: typically repeated once
+            'workload': self.workload,
+            'repetition': self.parcels * 2,    # sucker removal: typically repeated once
             'description': 'Record realised sucker removal activity on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels * 3,    # canopy management: several small interventions per parcel
+            'workload': self.workload,
+            'repetition': self.parcels * 3,    # canopy management: several small interventions per parcel
             'description': 'Record realised early canopy management activity on each parcel.',
         })
 
@@ -323,13 +283,6 @@ class UseCase1(BaseUseCase):
 
 
     def may_june_shoot_positioning_flowering_disease_protection_step(self):
-        workload = 'low'
-
-        # Reduced simulation workload: 2 farms, 5 parcels each => 10 parcels total
-        farms = 2
-        parcels_per_farm = 5
-        parcels = farms * parcels_per_farm  # 10
-
         # May–June period length (31 + 30 days)
         days = 61
 
@@ -342,23 +295,23 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'weather',
             'task': 'get_daily_forecast',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily weather forecast per parcel for flowering and disease-protection timing.',
         })
 
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_gdd',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily growing-degree-day calculation per parcel to track flowering progression.',
         })
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_risk',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily pest/disease infestation risk query per parcel during flowering.',
         })
 
@@ -366,16 +319,16 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels * 2,
+            'workload': self.workload,
+            'repetition': self.parcels * 2,
             'description': 'Record realised shoot positioning activity on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels * 3,
+            'workload': self.workload,
+            'repetition': self.parcels * 3,
             'description': 'Record realised disease-protection (plant protection product) applications on each parcel.',
         })
 
@@ -383,29 +336,22 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels * flowering_obs_rounds,
+            'workload': self.workload,
+            'repetition': self.parcels * flowering_obs_rounds,
             'description': 'Record flowering monitoring observation on each parcel (stage, uniformity, bloom).',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record disease/pest symptoms noticed during shoot positioning and disease-protection rounds.',
         })
 
         return task_scheduling
 
     def june_july_fruit_set_leaf_removal_cluster_thinning_irrigation_step(self):
-        workload = 'low'
-
-        # Reduced simulation workload: 2 farms, 5 parcels each => 10 parcels total
-        farms = 2
-        parcels_per_farm = 5
-        parcels = farms * parcels_per_farm  # 10
-
         # June–July period length (30 + 31 days)
         days = 61
 
@@ -415,23 +361,23 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'weather',
             'task': 'get_daily_forecast',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily weather forecast per parcel for irrigation and canopy-management decisions.',
         })
 
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_gdd',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily growing-degree-day calculation per parcel to track fruit development.',
         })
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_risk',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily pest/disease infestation risk query per parcel during fruit set and cluster development.',
         })
 
@@ -439,24 +385,24 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record realised leaf removal activity on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record realised cluster thinning activity on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels * 4,
+            'workload': self.workload,
+            'repetition': self.parcels * 4,
             'description': 'Record realised irrigation management activity on each parcel (repeated through the period).',
         })
 
@@ -464,29 +410,22 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record fruit set assessment observation on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record any disease/pest symptoms noticed during fruit set and cluster work on each parcel.',
         })
 
         return task_scheduling
 
     def july_august_canopy_trimming_veraison_pest_disease_step(self):
-        workload = 'low'
-
-        # Reduced simulation workload: 2 farms, 5 parcels each => 10 parcels total
-        farms = 2
-        parcels_per_farm = 5
-        parcels = farms * parcels_per_farm  # 10
-
         # July–August period length (31 + 31 days)
         days = 62
 
@@ -499,23 +438,23 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'weather',
             'task': 'get_daily_forecast',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily weather forecast per parcel for canopy trimming and pest/disease control timing.',
         })
 
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_gdd',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily growing-degree-day calculation per parcel to track veraison progression.',
         })
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_risk',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily pest/disease infestation risk query per parcel during veraison.',
         })
 
@@ -523,16 +462,16 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels * 2,
+            'workload': self.workload,
+            'repetition': self.parcels * 2,
             'description': 'Record realised canopy trimming activity on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels * 3,
+            'workload': self.workload,
+            'repetition': self.parcels * 3,
             'description': 'Record realised pest and disease control (plant protection product) applications on each parcel.',
         })
 
@@ -540,29 +479,22 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels * veraison_obs_rounds,
+            'workload': self.workload,
+            'repetition': self.parcels * veraison_obs_rounds,
             'description': 'Record veraison monitoring observation on each parcel (colour change, ripening stage).',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record pest/disease symptoms noticed during canopy trimming and control rounds on each parcel.',
         })
 
         return task_scheduling
 
     def august_september_ripeness_final_irrigation_harvest_planning_step(self):
-        workload = 'low'
-
-        # Reduced simulation workload: 2 farms, 5 parcels each => 10 parcels total
-        farms = 2
-        parcels_per_farm = 5
-        parcels = farms * parcels_per_farm  # 10
-
         # August–September period length (31 + 30 days)
         days = 61
 
@@ -575,23 +507,23 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'weather',
             'task': 'get_daily_forecast',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily weather forecast per parcel for final irrigation and harvest-planning decisions.',
         })
 
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_gdd',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily growing-degree-day calculation per parcel to track ripening progression.',
         })
         task_scheduling.append({
             'service': 'pestanddisease',
             'task': 'calculate_risk',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily pest/disease infestation risk query per parcel approaching harvest.',
         })
 
@@ -599,16 +531,16 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels * 2,
+            'workload': self.workload,
+            'repetition': self.parcels * 2,
             'description': 'Record realised final irrigation decision activity on each parcel.',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record realised harvest planning activity on each parcel.',
         })
 
@@ -616,29 +548,22 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels * ripeness_obs_rounds,
+            'workload': self.workload,
+            'repetition': self.parcels * ripeness_obs_rounds,
             'description': 'Record ripeness sampling observation on each parcel (sugar, acidity, phenolics).',
         })
 
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record final disease/pest symptoms check on each parcel before harvest.',
         })
 
         return task_scheduling
 
     def september_october_harvest_and_reporting_step(self):
-        workload = 'low'
-
-        # Reduced simulation workload: 2 farms, 5 parcels each => 10 parcels total
-        farms = 2
-        parcels_per_farm = 5
-        parcels = farms * parcels_per_farm  # 10
-
         # September–October period length (30 + 31 days)
         days = 61
 
@@ -648,8 +573,8 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'weather',
             'task': 'get_daily_forecast',
-            'workload': workload,
-            'repetition': parcels * days,
+            'workload': self.workload,
+            'repetition': self.parcels * days,
             'description': 'Daily weather forecast per parcel to finalise harvest timing.',
         })
 
@@ -657,8 +582,8 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_gen_activity',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record realised harvest activity on each parcel.',
         })
 
@@ -666,8 +591,8 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'farmcalendar',
             'task': 'register_obs',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Record final pre-harvest observation (ripeness confirmation, yield estimate) on each parcel.',
         })
 
@@ -675,16 +600,16 @@ class UseCase1(BaseUseCase):
         task_scheduling.append({
             'service': 'reporting',
             'task': 'standalone_report',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Generate per-parcel report of all farm practices applied over the cultivation period.',
         })
 
         task_scheduling.append({
             'service': 'reporting',
             'task': 'pesticides_report',
-            'workload': workload,
-            'repetition': parcels,
+            'workload': self.workload,
+            'repetition': self.parcels,
             'description': 'Generate per-parcel annual pesticide-use report according to legislation.',
         })
 

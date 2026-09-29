@@ -452,10 +452,15 @@ def get_device_energy_profile(profile_id):
             'p_max': 134,
             'p_idle': 70
         },
-        'Dinita et al 2013': {
+        'Cloud-Dinita et al 2013': {
             'id': 'Dinita et al 2013',
             'p_max': 239,
             'p_idle': 124
+        },
+        'Rpi4Test': {
+            'id': 'Rpi4Test',
+            'p_max': 12,
+            'p_idle': 2
         }
     }
 
