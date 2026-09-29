@@ -604,3 +604,59 @@ def plot_use_case_processing_energy_by_step(results_by_setup, use_case):
     )
 
     return fig, ax
+
+def plot_use_case_total_energy_by_setup(results_by_setup, use_case):
+    """
+    Bar plot of total energy consumption per deployment setup.
+
+    Parameters
+    ----------
+    results_by_setup : dict
+        Mapping of setup name -> simulation output dict (with a "totals" key).
+    use_case : str
+        Use case title.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
+    """
+    records = []
+    for setup_name, result in results_by_setup.items():
+        records.append({
+            "setup": setup_name,
+            "total_energy_kwh": result["totals"]["total_energy"] / 1000.0,
+        })
+
+    df = pd.DataFrame(records)
+
+    # ---- Plot ----
+    sns.set_theme(style="whitegrid", context="talk")
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    sns.barplot(
+        data=df,
+        x="setup",
+        y="total_energy_kwh",
+        hue="setup",
+        palette="deep",
+        ax=ax,
+        legend=False,
+    )
+
+    # Annotate each bar with its value
+    for container in ax.containers:
+        ax.bar_label(container, fmt="%.2f", padding=3, fontsize=10)
+
+    ax.set_title(
+        f"Total Energy Consumption per Deployment Setup - Use Case {use_case}",
+        fontsize=16, pad=15,
+    )
+    ax.set_xlabel("Deployment Setup", fontsize=13)
+    ax.set_ylabel("Total Energy (kWh)", fontsize=13)
+    ax.set_ylim(0, df["total_energy_kwh"].max() * 1.2)
+
+    sns.despine()
+    fig.tight_layout()
+
+    return fig, ax

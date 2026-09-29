@@ -122,8 +122,10 @@ class UseCaseA(BaseUseCase):
         Use Case A: Integrated crop-protection and pesticide use reporting for vineyards (Farm Calendar, Pest and Disease Management, Weather Service)
 
         A micro SME with expertise in ICT  is located in a rural area in Greece and wants to get into the smart agriculture business. They decided to collaborate with local farm advisors and to offer digital services including recording of farm management practices, decision support on crop protection and reporting about pesticides use. They have a new contract with a local farmers association cultivating vineyards.
-        The farmers association has 2 members/farmers and each farmer manages from 1-5 parcels. Each parcel covers an area from 1-5 hectares.
-        For grapevines, the “cultivation period” usually means the period from budbreak to harvest. In most wine-grape and table-grape regions, it lasts about: 150–200 days. In Mediterranean climates, grapevines often start active growth around March–April and are harvested around August–September, depending on variety, altitude, irrigation, and intended use
+        We consider a small use-case, with a low workload scenario, where the farmers association has 2 members/farmers and each farmer manages from 1-5 parcels. Each parcel covers an area from 1-5 hectares.
+
+        For grapevines, the “cultivation period” usually means the period from budbreak to harvest. In most wine-grape and table-grape regions, it lasts about: 150–200 days. In Mediterranean climates, grapevines often start active growth around March–April and are harvested around August–September, depending on variety, altitude, irrigation, and intended use.
+
         The initial date is set for the last day of February (one day to setup all the services and register parcels, etc..)
         and the final date is set for first day of November, after the harvest and reporting.
     """
@@ -132,7 +134,12 @@ class UseCaseA(BaseUseCase):
         init = datetime.date(2026, 2, 28)  # setup only, one day before March–April starts
         end = datetime.date(2026, 11, 1)   # after September–October (harvest + reporting)
         super().__init__(base_workload, deployment_setup, init, end, tasks_profiling_id)
-        self.farms = 2
+        if self.workload == 'low':
+            self.farms = 2
+        elif self.workload == 'medium':
+            self.farms = 45
+        elif self.workload == 'high':
+            self.farms = 125
         self.parcels_per_farm = 5
         self.parcels = self.farms * self.parcels_per_farm  # 10
         self.steps = {
