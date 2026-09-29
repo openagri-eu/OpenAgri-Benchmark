@@ -134,12 +134,13 @@ class UseCaseA(BaseUseCase):
         init = datetime.date(2026, 2, 28)  # setup only, one day before March–April starts
         end = datetime.date(2026, 11, 1)   # after September–October (harvest + reporting)
         super().__init__(base_workload, deployment_setup, init, end, tasks_profiling_id)
-        if self.workload == 'low':
-            self.farms = 2
-        elif self.workload == 'medium':
-            self.farms = 45
-        elif self.workload == 'high':
-            self.farms = 125
+        # if self.workload == 'low':
+        #     self.farms = 2
+        # elif self.workload == 'medium':
+        #     self.farms = 45
+        # elif self.workload == 'high':
+        #     self.farms = 125
+        self.farms = 2
         self.parcels_per_farm = 5
         self.parcels = self.farms * self.parcels_per_farm  # 10
         self.steps = {
@@ -177,7 +178,40 @@ class UseCaseA(BaseUseCase):
             },
         }
 
+    def daily_navigation_tasks(self, days):
+        task_scheduling = []
+
+        # Farmer selects a parcel before viewing anything
+        task_scheduling.append({
+            'service': 'farmcalendar',
+            'task': 'filter_parcels',
+            'workload': self.workload,
+            'repetition': self.parcels * days * 4,  # four times per day
+            'description': 'Farmer selects a parcel from their list to view its details.',
+        })
+
+        # Then views the monthly activities list for that parcel
+        task_scheduling.append({
+            'service': 'farmcalendar',
+            'task': 'monthly_activities',
+            'workload': self.workload,
+            'repetition': self.parcels * days * 2,  # twice times per day or navigating other months
+            'description': 'Farmer opens the monthly calendar view for a parcel.',
+        })
+
+        # Then views into specific activity details
+        task_scheduling.append({
+            'service': 'farmcalendar',
+            'task': 'get_activity',
+            'workload': self.workload,
+            'repetition': self.parcels * days * 4,  # a couple of activity details per parcel per day
+            'description': 'Farmer opens detail view of a specific calendar activity.',
+        })
+
+        return task_scheduling
+
     def farm_parcel_and_crop_creation_step(self):
+        days = 1
         task_scheduling = []
         task_scheduling.append({
             'service': 'farmcalendar',
@@ -215,12 +249,12 @@ class UseCaseA(BaseUseCase):
             'repetition': 6,
             'description': 'Creating new generic activity types specific for the use case.',
         })
+        task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
-
 
     def march_april_budbreak_weed_first_disease_monitoring_step(self):
         # March–April period length (31 + 30 days)
-        days = 61
+        days = 31
 
         task_scheduling = []
 
@@ -271,6 +305,8 @@ class UseCaseA(BaseUseCase):
             'description': 'Record first disease monitoring observation on each parcel.',
         })
 
+
+        task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
 
     def april_may_shoot_thinning_sucker_removal_canopy_management_step(self):
@@ -278,7 +314,7 @@ class UseCaseA(BaseUseCase):
         obs_rounds = 8  # ~one monitoring round per week over the period
 
         # April–May period length (30 + 31 days)
-        days = 61
+        days = 30
 
         task_scheduling = []
 
@@ -353,12 +389,14 @@ class UseCaseA(BaseUseCase):
             'description': 'Record realised early canopy management activity on each parcel.',
         })
 
+
+        task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
 
 
     def may_june_shoot_positioning_flowering_disease_protection_step(self):
         # May–June period length (31 + 30 days)
-        days = 61
+        days = 31
 
         # Flowering monitoring is intensive; roughly every 2–3 days per parcel
         flowering_obs_rounds = 20
@@ -423,11 +461,13 @@ class UseCaseA(BaseUseCase):
             'description': 'Record disease/pest symptoms noticed during shoot positioning and disease-protection rounds.',
         })
 
+
+        task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
 
     def june_july_fruit_set_leaf_removal_cluster_thinning_irrigation_step(self):
         # June–July period length (30 + 31 days)
-        days = 61
+        days = 30
 
         task_scheduling = []
 
@@ -497,11 +537,13 @@ class UseCaseA(BaseUseCase):
             'description': 'Record any disease/pest symptoms noticed during fruit set and cluster work on each parcel.',
         })
 
+
+        task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
 
     def july_august_canopy_trimming_veraison_pest_disease_step(self):
         # July–August period length (31 + 31 days)
-        days = 62
+        days = 31
 
         # Veraison monitoring is intensive during the ripening transition
         veraison_obs_rounds = 15
@@ -566,11 +608,13 @@ class UseCaseA(BaseUseCase):
             'description': 'Record pest/disease symptoms noticed during canopy trimming and control rounds on each parcel.',
         })
 
+
+        task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
 
     def august_september_ripeness_final_irrigation_harvest_planning_step(self):
         # August–September period length (31 + 30 days)
-        days = 61
+        days = 31
 
         # Ripeness sampling intensifies approaching harvest
         ripeness_obs_rounds = 20
@@ -635,11 +679,13 @@ class UseCaseA(BaseUseCase):
             'description': 'Record final disease/pest symptoms check on each parcel before harvest.',
         })
 
+
+        task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
 
     def september_october_harvest_and_reporting_step(self):
         # September–October period length (30 + 31 days)
-        days = 61
+        days = 30
 
         task_scheduling = []
 
@@ -687,4 +733,6 @@ class UseCaseA(BaseUseCase):
             'description': 'Generate per-parcel annual pesticide-use report according to legislation.',
         })
 
+
+        task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
