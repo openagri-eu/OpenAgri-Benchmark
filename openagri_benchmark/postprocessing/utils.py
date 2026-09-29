@@ -382,7 +382,7 @@ def plot_p99_rtt_distribution_violin(df, setup):
         # Annotate the median value on each violin
         for pos, data in zip(positions, data_for_violin):
             median_val = np.mean(data)
-            ax.text(pos, median_val, f'{median_val:.2f}',
+            ax.text(pos, median_val, f'{median_val:.3f}',
                     ha='center', va='bottom', fontsize=9,
                     color='darkblue', fontweight='bold')
 
