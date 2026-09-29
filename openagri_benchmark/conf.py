@@ -6,6 +6,7 @@ SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SOURCE_DIR)
 DEFAULT_OUTPUTS_DIR = os.path.join(PROJECT_ROOT, 'outputs')
 POSTPROCESSING_INPUT_DIR = os.path.join(SOURCE_DIR, 'postprocessing', 'inputs')
+POSTPROCESSING_TASK_PROFILES_DIR = os.path.join(SOURCE_DIR, 'postprocessing', 'profiles')
 
 
 HEALTHCHECK_TIMEOUT = config('HEALTHCHECK_TIMEOUT', default=20, cast=int)
