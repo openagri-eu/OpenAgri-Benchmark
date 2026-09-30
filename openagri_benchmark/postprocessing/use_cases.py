@@ -97,7 +97,7 @@ class BaseUseCase(object):
             # scheduling = '\n'.join(tasks_desc)
             # print(f'{scheduling}\n\n')
 
-            headers = ["Service", "Task", "Repetition", "Description"]
+            headers = ["Service", "Task", "Workload", "Repetition", "Description"]
 
             md_table = '\n'
             md_table += ("| " + " | ".join(headers) + " |" + "\n")
@@ -107,6 +107,7 @@ class BaseUseCase(object):
                 row = [
                     entry["service"],
                     entry["task"],
+                    entry["workload"],
                     str(entry["repetition"]),
                     entry["description"],
                 ]
