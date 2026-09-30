@@ -430,7 +430,8 @@ def create_tasks_energy_profile(df_eval, setup_devices):
             'tasks': tasks,
             'meta': {
                 'device_id': device_profile['id'],
-                'iddle_energy': device_profile['p_idle']
+                'iddle_energy': device_profile['p_idle'],
+                'max_energy': device_profile['p_max']
             }
         }
     return profile
@@ -513,6 +514,24 @@ def energy_from_cpu_estimation(device_profile, cpu_perc):
 def create_task_profiling_json(df, profiling_id, setup_devices):
     profiling_file_path = Path(POSTPROCESSING_TASK_PROFILES_DIR) / f'{profiling_id}.json'
     tasks_profile = create_tasks_energy_profile(df, setup_devices)
+
+
+
+    # import copy
+
+
+    # # Deep copy so we don't mutate the original
+    # edge_mocked = copy.deepcopy(tasks_profile['cloud']['tasks'])
+
+    # # Scale every step's energy by 0.08 (8% of cloud)
+    # for workflow, service_dict in edge_mocked.items():
+    #     for service, task_dict in service_dict.items():
+    #         for task, task_data in task_dict.items():
+    #             task_data['rtt'] *= 1.5
+    #             task_data['energy'] *= 0.08
+
+    # tasks_profile['edge']['tasks'] = edge_mocked
+
     with open(profiling_file_path, 'w') as f:
         json.dump(tasks_profile, f, indent=4)
     return profiling_file_path
