@@ -649,6 +649,11 @@ def plot_use_case_total_energy_by_setup(results_by_setup, use_case):
 
     df = pd.DataFrame(records)
 
+    # ---- Sort setups so color assignment is stable across runs ----
+    sorted_setups = sorted(df["setup"].tolist())
+    df = df.set_index("setup").loc[sorted_setups].reset_index()
+
+
     # ---- Plot ----
     sns.set_theme(style="whitegrid", context="talk")
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -658,9 +663,9 @@ def plot_use_case_total_energy_by_setup(results_by_setup, use_case):
         x="setup",
         y="total_energy_kwh",
         hue="setup",
-        palette="deep",
         ax=ax,
         legend=False,
+        order=sorted_setups,
     )
 
     # Annotate each bar with its value
