@@ -258,6 +258,7 @@ def plot_resource(df, setup):
             ax_mem.set_ylabel('Avg MEM % (Axis zoomed in)')
             ax_mem.tick_params(axis='x', rotation=90)
 
+
         # Unified legend for all four components
         legend_elements = [
             Patch(facecolor='darkorange', label='Service CPU'),
@@ -266,70 +267,106 @@ def plot_resource(df, setup):
             Patch(facecolor='darkgreen',   label='DB MEM')
         ]
         fig.legend(handles=legend_elements, loc='lower center', ncol=4)
-        fig.suptitle(f'{setup} Resource Usage – Workload: {workload}', fontsize=14)
+        fig.suptitle(f'{setup} Resource Usage – Workload: {workload}', fontsize=14, weight='bold')
         plt.tight_layout()
+        # ---- Move legend below the x-axis labels ----
+        sns.move_legend(
+            fig,
+            loc="lower center",
+            bbox_to_anchor=(0.5, -0.01),
+            # title="Deployment Setup",
+            frameon=True,
+            ncol=4,
+        )
         plt.subplots_adjust(top=0.95)
+
         plt.show()
+
 
 
 def plot_p99_rtt(df, setup=''):
     """
-    Plot P99 RTT (request round trip time) bars per task, grouped by service.
-    One row per service, with P99 RTT values displayed.
+    Plot P99 RTT (request round trip time) bars per task, grouped by service,
+    with the average RTT (RTT_AVG) overlaid as a horizontal line + value per bar.
+    One row per service.
     """
     df = df[df['setup'] == setup]
-    # Aggregate mean P99 RTT
-    rtt_agg = df.groupby(['workload', 'service', 'task'])['P99_RTT'].mean().reset_index()
+
+    # Aggregate mean P99 RTT and mean RTT_AVG per workload/service/task
+    rtt_agg = (df.groupby(['workload', 'service', 'task'])[['P99_RTT', 'RTT_AVG']]
+                 .mean()
+                 .reset_index())
 
     for workload in ['low', 'medium', 'high']:
         if workload not in rtt_agg['workload'].unique():
             continue
+
         rtt_wl = rtt_agg[rtt_agg['workload'] == workload]
         services = rtt_wl['service'].unique()
         n_services = len(services)
 
-        # Single column for P99 RTT
         fig, axes = plt.subplots(n_services, 1,
                                  figsize=(10, 5 * n_services),
                                  sharey=True)
+        # Make sure axes is always iterable (single-service case)
+        axes = np.atleast_1d(axes)
 
         for i, service in enumerate(services):
-            rtt_data = rtt_wl[rtt_wl['service'] == service]
+            rtt_data = rtt_wl[rtt_wl['service'] == service].reset_index(drop=True)
             ax = axes[i]
 
             # Plot P99 RTT as bars
-            ax.bar(rtt_data['task'], rtt_data['P99_RTT'],
-                   color='coral', edgecolor='darkred', linewidth=0.5)
+            bars = ax.bar(rtt_data['task'], rtt_data['P99_RTT'],
+                          color='coral', edgecolor='darkred', linewidth=0.5,
+                          label='P99 RTT', zorder=2)
 
             ax.set_yscale('log')
 
-            # Add value labels on top of bars (only for non-zero values)
+            # Value labels on top of bars (only for non-zero values)
             for j, v in enumerate(rtt_data['P99_RTT']):
                 if v > 0:
-                    # Position label slightly above the bar in log space
-                    label_y = v * 1.1  # 10% above the bar
-                    ax.text(j, label_y,
-                           f'{v:.3f}', ha='center', va='bottom', fontsize=9)
+                    ax.text(j, v * 1.1, f'{v:.3f}',
+                            ha='center', va='bottom', fontsize=9, zorder=5)
 
-            ax.set_title(f'{service} - P99 RTT')
-            ax.set_ylabel('P99 RTT (s)')
+            # Overlay average RTT as a horizontal line across each bar
+            has_avg = 'RTT_AVG' in rtt_data.columns
+            if has_avg:
+                for j, avg in enumerate(rtt_data['RTT_AVG']):
+                    if avg is None or not np.isfinite(avg) or avg <= 0:
+                        continue
+                    bar_width = bars[j].get_width()
+                    x_left = j - bar_width / 2
+                    x_right = j + bar_width / 2
+                    # Horizontal line at the average value
+                    ax.hlines(y=avg, xmin=x_left, xmax=x_right,
+                              color='navy', linewidth=2, zorder=4)
+                    # Small end-caps to make it look like an avg marker
+                    cap = bar_width * 0.06
+                    ax.vlines(x=[x_left, x_right],
+                              ymin=avg * 0.95, ymax=avg * 1.05,
+                              color='navy', linewidth=1.5, zorder=4)
+                    # Value label just below the line (avg ≤ p99, so this sits inside the bar)
+                    ax.text(j, avg * 0.85, f'{avg:.3f}',
+                            ha='center', va='top', fontsize=8,
+                            color='navy', weight='bold', zorder=6)
+
+            # Legend (add a proxy handle for the avg line if it exists)
+            handles, labels = ax.get_legend_handles_labels()
+            if has_avg:
+                from matplotlib.lines import Line2D
+                handles.append(Line2D([0], [0], color='navy', linewidth=2))
+                labels.append('Avg RTT')
+            ax.legend(handles, labels, loc='upper right', fontsize=8)
+
+            ax.set_title(f'{service} - P99 RTT (with avg)')
+            ax.set_ylabel('RTT (s)')
             ax.tick_params(axis='x', rotation=90)
             ax.grid(axis='y', alpha=0.3, linestyle='--')
 
-            # For log scale, set bottom to a small positive value based on data
-            # positive_values = rtt_data[rtt_data['P99_RTT'] > 0]['P99_RTT']
-            # if len(positive_values) > 0:
-            #     min_positive = positive_values.min()
-            #     # Set bottom to half of the minimum positive value
-            #     ax.set_ylim(bottom=min_positive * 0.5)
-            # else:
-            #     # If all values are 0, use a default small value
-            top = 10
-            if workload == 'medium':
-                top = 20
             ax.set_ylim(bottom=0.0001, top=80)
 
-        fig.suptitle(f'{setup} P99 Request Round Trip Time – Workload: {workload}', fontsize=14)
+        fig.suptitle(f'{setup} P99 Request Round Trip Time – Workload: {workload}',
+                     fontsize=14, weight='bold')
         plt.tight_layout()
         plt.subplots_adjust(top=0.95)
         plt.show()
@@ -390,7 +427,7 @@ def plot_p99_rtt_distribution_violin(df, setup):
         ax.set_xticks(positions)
         ax.set_xticklabels(services, rotation=45, ha='right')
         ax.set_ylabel('P99 RTT (s)')
-        ax.set_title(f'{setup}: P99 RTT Distribution by Service – Workload: {workload}')
+        ax.set_title(f'{setup}: P99 RTT Distribution by Service – Workload: {workload}', weight='bold')
         ax.grid(axis='y', alpha=0.3, linestyle='--')
 
         # Use log scale if data spans multiple orders of magnitude

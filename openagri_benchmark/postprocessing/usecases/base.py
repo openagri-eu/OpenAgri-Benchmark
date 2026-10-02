@@ -90,13 +90,19 @@ class BaseUseCase(object):
         title = f'# {cls.__name__}\n'
         desc = (inspect.getdoc(cls) or '').strip()
         full_md_text = title + '\n' + desc + '\n\n' if desc else title + '\n'
+        full_md_text += "Table with detailed tasks per step/period: \n"
+        full_md_text += "* *Service* : Which service is responsible for handling this task.\n"
+        full_md_text += "* *Task* : Relates to specific a endpoint in a service web API.\n"
+        full_md_text += "* *Workload* : Real-world workload profile use to simulated this task. Low = 2 RPS; Medium = 30 RPS; High = 60 RPS\n"
+        full_md_text += "* *Repetitions* : Number of times this task is repeated with the given workload profile. **Important to note:** 1 repetition with Medium workload (i.e., 30 RPS) is equivalent to 30 users doing the same task at the same time once.\n"
+        full_md_text += "* *Description* : Description of the task being simulated.\n"
         for step_i, step_dict in results['steps'].items():
             title = f'## {step_i}: {step_dict["step_name"]}\n'
             # tasks_desc = [v['description'] for v in step_dict['scheduling']]
             # scheduling = '\n'.join(tasks_desc)
             # print(f'{scheduling}\n\n')
 
-            headers = ["Service", "Task", "Workload", "Repetition", "Description"]
+            headers = ["Service", "Task", "Workload", "Repetitions", "Description"]
 
             md_table = '\n'
             md_table += ("| " + " | ".join(headers) + " |" + "\n")

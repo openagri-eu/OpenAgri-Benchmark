@@ -12,7 +12,7 @@ class UseCaseA(BaseUseCase):
 
         For grapevines, the “cultivation period” usually means the period from budbreak to harvest. In most wine-grape and table-grape regions, it lasts about: 150–200 days. In Mediterranean climates, grapevines often start active growth around March–April and are harvested around August–September, depending on variety, altitude, irrigation, and intended use.
 
-        The initial date is set for the last day of February (one day to setup all the services and register parcels, etc..)
+        The initial date of the simulation is set for the last day of February (one day to setup all the services and register parcels, etc..)
         and the final date is set for first day of November, after the harvest and reporting.
     """
 
@@ -135,7 +135,7 @@ class UseCaseA(BaseUseCase):
             'repetition': 6,
             'description': 'Creating new generic activity types specific for the use case.',
         })
-        task_scheduling.extend(self.daily_navigation_tasks(days))
+        # task_scheduling.extend(self.daily_navigation_tasks(days))
         return task_scheduling
 
     def march_april_budbreak_weed_first_disease_monitoring_step(self):

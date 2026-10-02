@@ -6,15 +6,19 @@ from .base import BaseUseCase
 class UseCaseB(BaseUseCase):
     """
     Use Case B — Irrigation workflow for irrigated field crops (Farm Calendar, Irrigation Service, Weather Service, Reporting Service)
+
     A micro SME with expertise in ICT is located in a rural area in Poland and wants to get into the smart agriculture business.
     Given the increasing frequency of droughts in the region, they decided to collaborate with local farm advisors and to offer
       digital services to irrigated-field farmers, including recording of farm management practices, decision support on irrigation timing and dose,
       and reporting about water use. They have a new contract with a local farmers cooperative.
+
     We consider a low workload for this use case, with very sparse brust of medium workload use case,
         where the cooperative has 30 members/farmers and each farmer manages 5 parcels.
     Each parcel covers an area from 1–5 hectares.
+
     The irrigation season runs from crop establishment to harvest, roughly March–October depending on the crop (e.g., potatoes, sugar beet, maize) and the intended use.
-    The initial date is set for the last day of February (one day to setup all the services and register farms, parcels and crops) and
+
+    The initial date of the simulation is set for the last day of February (one day to setup all the services and register farms, parcels and crops) and
         the final date is set for the first day of November, after the harvest and reporting.
     """
 
