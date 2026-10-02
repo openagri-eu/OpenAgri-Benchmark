@@ -94,7 +94,7 @@ class BaseUseCase(object):
         full_md_text += "* *Service* : Which service is responsible for handling this task.\n"
         full_md_text += "* *Task* : Relates to specific a endpoint in a service web API.\n"
         full_md_text += "* *Workload* : Real-world workload profile use to simulated this task. Low = 2 RPS; Medium = 30 RPS; High = 60 RPS\n"
-        full_md_text += "* *Repetitions* : Number of times this task is repeated with the given workload profile. **Important to note:** 1 repetition with Medium workload (i.e., 30 RPS) is equivalent to 30 users doing the same task at the same time once.\n"
+        full_md_text += "* *Repetitions* : Number of times this task is repeated within a step/period, using the given workload profile. **Important to note:** 1 repetition with Medium workload (i.e., 30 RPS) is equivalent to 30 users doing the same task at the same time once.\n"
         full_md_text += "* *Description* : Description of the task being simulated.\n"
         for step_i, step_dict in results['steps'].items():
             title = f'## {step_i}: {step_dict["step_name"]}\n'

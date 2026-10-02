@@ -8,7 +8,7 @@ class UseCaseA(BaseUseCase):
         Use Case A: Integrated crop-protection and pesticide use reporting for vineyards (Farm Calendar, Pest and Disease Management, Weather Service)
 
         A micro SME with expertise in ICT  is located in a rural area in Greece and wants to get into the smart agriculture business. They decided to collaborate with local farm advisors and to offer digital services including recording of farm management practices, decision support on crop protection and reporting about pesticides use. They have a new contract with a local farmers association cultivating vineyards.
-        We consider a small use-case, with a low workload scenario, where the farmers association has 2 members/farmers and each farmer manages from 1-5 parcels. Each parcel covers an area from 1-5 hectares.
+        We consider a small use-case, with a low workload scenario, where the farmers association has **2 members/farmers** and each farmer manages **5 parcels** (i.e., **10 parcels** in total). Each parcel covers an area from 1-5 hectares.
 
         For grapevines, the “cultivation period” usually means the period from budbreak to harvest. In most wine-grape and table-grape regions, it lasts about: 150–200 days. In Mediterranean climates, grapevines often start active growth around March–April and are harvested around August–September, depending on variety, altitude, irrigation, and intended use.
 
