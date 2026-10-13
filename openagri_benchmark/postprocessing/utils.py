@@ -490,6 +490,11 @@ def get_device_energy_profile(profile_id):
             'p_max': 134,
             'p_idle': 70
         },
+        'Intel-S9200WK-112-cores-VM-32-CPU': {
+            'id': 'Intel-S9200WK-112-cores-VM-32-CPU',
+            'p_max': 209.94, # 32 CPUs as 28% of the total max cpu usage energy consumption of 320.30w
+            'p_idle': 165.8
+        },
         'Cloud-Dinita et al 2013': {
             'id': 'Dinita et al 2013',
             'p_max': 239,
@@ -548,26 +553,25 @@ def energy_from_cpu_estimation(device_profile, cpu_perc):
 #     return total_wh  # Wh
 
 
-def create_task_profiling_json(df, profiling_id, setup_devices):
+def create_task_profiling_json(df, profiling_id, setup_devices, mock_edge=False):
     profiling_file_path = Path(POSTPROCESSING_TASK_PROFILES_DIR) / f'{profiling_id}.json'
     tasks_profile = create_tasks_energy_profile(df, setup_devices)
 
 
+    if mock_edge:
+        import copy
 
-    # import copy
+        # Deep copy so we don't mutate the original
+        edge_mocked = copy.deepcopy(tasks_profile['cloud']['tasks'])
 
+        # Scale every step's energy by 0.08 (8% of cloud)
+        for workflow, service_dict in edge_mocked.items():
+            for service, task_dict in service_dict.items():
+                for task, task_data in task_dict.items():
+                    task_data['rtt'] *= 1.5
+                    task_data['energy'] *= 0.08
 
-    # # Deep copy so we don't mutate the original
-    # edge_mocked = copy.deepcopy(tasks_profile['cloud']['tasks'])
-
-    # # Scale every step's energy by 0.08 (8% of cloud)
-    # for workflow, service_dict in edge_mocked.items():
-    #     for service, task_dict in service_dict.items():
-    #         for task, task_data in task_dict.items():
-    #             task_data['rtt'] *= 1.5
-    #             task_data['energy'] *= 0.08
-
-    # tasks_profile['edge']['tasks'] = edge_mocked
+        tasks_profile['edge']['tasks'] = edge_mocked
 
     with open(profiling_file_path, 'w') as f:
         json.dump(tasks_profile, f, indent=4)
