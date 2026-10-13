@@ -490,7 +490,7 @@ def get_device_energy_profile(profile_id):
             'p_max': 134,
             'p_idle': 70
         },
-        'Intel-S9200WK-112-cores-VM-32-CPU': {
+        'Intel-S9200WK-112-cores-VM-32-CPU': { #intells S920WK public tech specs pdf document.
             'id': 'Intel-S9200WK-112-cores-VM-32-CPU',
             'p_max': 209.94, # 32 CPUs as 28% of the total max cpu usage energy consumption of 320.30w
             'p_idle': 165.8
