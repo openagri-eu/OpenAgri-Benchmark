@@ -481,6 +481,7 @@ def get_device_energy_profile(profile_id):
     P_idle = 124 W/hour (baseline)
 
     more recent rack servers have better energy usage, like the powerEdge R7715 for instance.
+    Intel-S9200WK-112-cores-VM-32-CPU is the profile that best matches our cloud server setup
     """
     # 32CPU and 128GB RAM
 
@@ -504,7 +505,12 @@ def get_device_energy_profile(profile_id):
             'id': 'Rpi4Test',
             'p_max': 12,
             'p_idle': 2
-        }
+        },
+        'RaspberryPi4-8gb': {
+            'id': 'RaspberryPi4-8gb',
+            'p_max': 12,
+            'p_idle': 2
+        },
     }
 
     # using as ref PowerEdge R7715: https://www.spec.org/power_ssj2008/results/res2025q4/power_ssj2008-20250915-01539-power.html#1
@@ -553,7 +559,7 @@ def energy_from_cpu_estimation(device_profile, cpu_perc):
 #     return total_wh  # Wh
 
 
-def create_task_profiling_json(df, profiling_id, setup_devices, mock_edge=False):
+def create_task_profiling_json(df, profiling_id, setup_devices, mock_edge=False, mock_edge_reporting=False):
     profiling_file_path = Path(POSTPROCESSING_TASK_PROFILES_DIR) / f'{profiling_id}.json'
     tasks_profile = create_tasks_energy_profile(df, setup_devices)
 
@@ -572,6 +578,23 @@ def create_task_profiling_json(df, profiling_id, setup_devices, mock_edge=False)
                     task_data['energy'] *= 0.08
 
         tasks_profile['edge']['tasks'] = edge_mocked
+
+    if mock_edge_reporting:
+        import copy
+
+        # Deep copy so we don't mutate the original while looping it
+        mocked_copy = copy.deepcopy(tasks_profile['cloud']['tasks'])
+
+        # Scale every step's energy by 0.08 (8% of cloud)
+        for workflow, service_dict in mocked_copy.items():
+            task_dict = service_dict['reporting']
+            for task, task_data in task_dict.items():
+                task_data['rtt'] *= 1.5
+                task_data['energy'] *= 0.08
+
+            tasks_profile['edge']['tasks'][workflow]['reporting'] = task_dict
+
+
 
     with open(profiling_file_path, 'w') as f:
         json.dump(tasks_profile, f, indent=4)
@@ -720,6 +743,68 @@ def plot_use_case_total_energy_by_setup(results_by_setup, use_case):
     ax.set_xlabel("Deployment Setup", fontsize=13)
     ax.set_ylabel("Total Energy (kWh)", fontsize=13)
     ax.set_ylim(0, df["total_energy_kwh"].max() * 1.2)
+
+    sns.despine()
+    fig.tight_layout()
+
+    return fig, ax
+
+
+def plot_use_case_total_proc_time_by_setup(results_by_setup, use_case):
+    """
+    Bar plot of total processing time per deployment setup.
+
+    Parameters
+    ----------
+    results_by_setup : dict
+        Mapping of setup name -> simulation output dict (with a "totals" key).
+    use_case : str
+        Use case title.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    ax : matplotlib.axes.Axes
+    """
+    records = []
+    for setup_name, result in results_by_setup.items():
+        records.append({
+            "setup": setup_name,
+            "proc_time": result["totals"]["proc_time"],
+        })
+
+    df = pd.DataFrame(records)
+
+    # ---- Sort setups so color assignment is stable across runs ----
+    sorted_setups = sorted(df["setup"].tolist())
+    df = df.set_index("setup").loc[sorted_setups].reset_index()
+
+
+    # ---- Plot ----
+    sns.set_theme(style="whitegrid", context="talk")
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    sns.barplot(
+        data=df,
+        x="setup",
+        y="proc_time",
+        hue="setup",
+        ax=ax,
+        legend=False,
+        order=sorted_setups,
+    )
+
+    # Annotate each bar with its value
+    for container in ax.containers:
+        ax.bar_label(container, fmt="%.2f", padding=3, fontsize=10)
+
+    ax.set_title(
+        f"Total Processing Time per Deployment Setup - Use Case {use_case}",
+        fontsize=16, pad=15,
+    )
+    ax.set_xlabel("Deployment Setup", fontsize=13)
+    ax.set_ylabel("Total Processing Time (hours)", fontsize=13)
+    ax.set_ylim(0, df["proc_time"].max() * 1.2)
 
     sns.despine()
     fig.tight_layout()
