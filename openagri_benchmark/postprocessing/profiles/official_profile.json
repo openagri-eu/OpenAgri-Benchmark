@@ -1,0 +1,968 @@
+{
+    "cloud": {
+        "tasks": {
+            "medium": {
+                "reporting": {
+                    "standalone_report": {
+                        "rtt": 15.844636214266776,
+                        "energy": 210.12940072727272
+                    },
+                    "irrigation_report": {
+                        "rtt": 9.742861185711222,
+                        "energy": 210.18844514285715
+                    },
+                    "fertilization_report": {
+                        "rtt": 9.948009309866777,
+                        "energy": 210.1499802857143
+                    },
+                    "pesticides_report": {
+                        "rtt": 9.04408086924456,
+                        "energy": 210.33473771428572
+                    },
+                    "animal_report": {
+                        "rtt": 12.37125147823313,
+                        "energy": 210.13176377777776
+                    },
+                    "compost_report": {
+                        "rtt": 13.356161887511108,
+                        "energy": 210.231324
+                    }
+                },
+                "farmcalendar": {
+                    "register_farm": {
+                        "rtt": 0.05864209204450566,
+                        "energy": 196.83042
+                    },
+                    "register_parcel": {
+                        "rtt": 0.18747651691113182,
+                        "energy": 208.679803
+                    },
+                    "filter_parcels": {
+                        "rtt": 0.020557684311239024,
+                        "energy": 187.415358
+                    },
+                    "register_activity_type": {
+                        "rtt": 0.08114140682232068,
+                        "energy": 180.926778
+                    },
+                    "register_gen_activity": {
+                        "rtt": 0.09385804681664417,
+                        "energy": 194.30266933333334
+                    },
+                    "register_obs": {
+                        "rtt": 0.0356382226055454,
+                        "energy": 204.86537133333331
+                    },
+                    "monthly_activities": {
+                        "rtt": 0.7233997116401103,
+                        "energy": 217.60858933333333
+                    },
+                    "get_activity": {
+                        "rtt": 0.05018722887329204,
+                        "energy": 228.31253933333332
+                    },
+                    "register_crop": {
+                        "rtt": 0.040961684466734975,
+                        "energy": 179.68865100000002
+                    }
+                },
+                "irrigation": {
+                    "upload_data": {
+                        "rtt": 48.211989559666755,
+                        "energy": 210.73690594594595
+                    },
+                    "list_datasets": {
+                        "rtt": 0.010195053333437601,
+                        "energy": 169.79467
+                    },
+                    "eto_option_types": {
+                        "rtt": 0.004415436155411751,
+                        "energy": 210.244566
+                    },
+                    "get_dataset": {
+                        "rtt": 7.532442138533588,
+                        "energy": 212.5018856
+                    },
+                    "analyse_dataset": {
+                        "rtt": 1.0272642923328628,
+                        "energy": 199.222808
+                    },
+                    "irrigation_datapoints": {
+                        "rtt": 0.8358144363997174,
+                        "energy": 174.24398200000002
+                    },
+                    "delete_dataset": {
+                        "rtt": 0.029976493066108865,
+                        "energy": 168.722068
+                    }
+                },
+                "pestanddisease": {
+                    "register_disease": {
+                        "rtt": 0.02828626393323551,
+                        "energy": 180.75463200000002
+                    },
+                    "list_disease": {
+                        "rtt": 0.01380218111124931,
+                        "energy": 217.32903599999997
+                    },
+                    "upload_data": {
+                        "rtt": 15.359275513422189,
+                        "energy": 216.1487324
+                    },
+                    "get_parcel_data": {
+                        "rtt": 0.03409144728866522,
+                        "energy": 217.52325199999999
+                    },
+                    "calculate_gdd": {
+                        "rtt": 0.06451152975561046,
+                        "energy": 216.51244599999998
+                    },
+                    "calculate_risk": {
+                        "rtt": 2.35566350715538,
+                        "energy": 213.883909
+                    },
+                    "fuzzy_risk_calculate": {
+                        "rtt": 2.483615253822346,
+                        "energy": 194.738184
+                    }
+                },
+                "weather": {
+                    "list_locations": {
+                        "rtt": 0.004400358377764254,
+                        "energy": 169.739495
+                    },
+                    "get_locations_by_coord": {
+                        "rtt": 0.003973942177819683,
+                        "energy": 184.475634
+                    },
+                    "add_locations": {
+                        "rtt": 0.1033275063555872,
+                        "energy": 170.796648
+                    },
+                    "get_hourly_forecast": {
+                        "rtt": 0.005927847977808496,
+                        "energy": 171.187287
+                    },
+                    "get_hourly_spray_forecast": {
+                        "rtt": 0.005662105800022093,
+                        "energy": 168.02907000000002
+                    },
+                    "get_daily_forecast": {
+                        "rtt": 0.00235934282223348,
+                        "energy": 172.028154
+                    },
+                    "get_hourly_history": {
+                        "rtt": 0.006529208611189259,
+                        "energy": 170.840788
+                    },
+                    "get_daily_history": {
+                        "rtt": 0.004763750722162917,
+                        "energy": 168.342464
+                    }
+                }
+            },
+            "low": {
+                "reporting": {
+                    "standalone_report": {
+                        "rtt": 0.2565702967998732,
+                        "energy": 187.285145
+                    },
+                    "irrigation_report": {
+                        "rtt": 0.18169870110014016,
+                        "energy": 180.95473333333334
+                    },
+                    "fertilization_report": {
+                        "rtt": 0.17415418990021864,
+                        "energy": 180.66414500000002
+                    },
+                    "pesticides_report": {
+                        "rtt": 0.17428730049996374,
+                        "energy": 183.570764
+                    },
+                    "animal_report": {
+                        "rtt": 0.21160005659967282,
+                        "energy": 184.00039333333334
+                    },
+                    "compost_report": {
+                        "rtt": 0.2228102212999147,
+                        "energy": 175.570389
+                    }
+                },
+                "irrigation": {
+                    "upload_data": {
+                        "rtt": 30.764902453000104,
+                        "energy": 193.500332875
+                    },
+                    "list_datasets": {
+                        "rtt": 0.008743545199831716,
+                        "energy": 166.643074
+                    },
+                    "eto_option_types": {
+                        "rtt": 0.006332309199933661,
+                        "energy": 171.27336
+                    },
+                    "get_dataset": {
+                        "rtt": 0.9578481684002327,
+                        "energy": 192.120682
+                    },
+                    "analyse_dataset": {
+                        "rtt": 0.09158615359992836,
+                        "energy": 174.15570200000002
+                    },
+                    "irrigation_datapoints": {
+                        "rtt": 0.07934279940018314,
+                        "energy": 168.298324
+                    },
+                    "delete_dataset": {
+                        "rtt": 0.03255812999996124,
+                        "energy": 165.901522
+                    }
+                },
+                "farmcalendar": {
+                    "register_farm": {
+                        "rtt": 0.1204940371997509,
+                        "energy": 169.521002
+                    },
+                    "register_parcel": {
+                        "rtt": 0.2889809785001489,
+                        "energy": 168.90745600000002
+                    },
+                    "filter_parcels": {
+                        "rtt": 0.025882643000295504,
+                        "energy": 168.80740533333335
+                    },
+                    "register_activity_type": {
+                        "rtt": 0.024877077199926136,
+                        "energy": 169.401824
+                    },
+                    "register_gen_activity": {
+                        "rtt": 0.039787734099991215,
+                        "energy": 168.523438
+                    },
+                    "register_obs": {
+                        "rtt": 0.0637852478998866,
+                        "energy": 169.1800205
+                    },
+                    "monthly_activities": {
+                        "rtt": 0.04151312069971027,
+                        "energy": 170.048475
+                    },
+                    "get_activity": {
+                        "rtt": 0.04989302649973979,
+                        "energy": 170.840788
+                    },
+                    "register_crop": {
+                        "rtt": 0.03558336060013971,
+                        "energy": 168.24535600000002
+                    }
+                },
+                "weather": {
+                    "list_locations": {
+                        "rtt": 0.004443142100171826,
+                        "energy": 166.38706200000001
+                    },
+                    "get_locations_by_coord": {
+                        "rtt": 0.004775840799629805,
+                        "energy": 169.03399066666668
+                    },
+                    "add_locations": {
+                        "rtt": 0.06330316619969381,
+                        "energy": 166.448858
+                    },
+                    "get_hourly_forecast": {
+                        "rtt": 0.0061733715998343545,
+                        "energy": 168.596269
+                    },
+                    "get_hourly_spray_forecast": {
+                        "rtt": 0.006413756400252169,
+                        "energy": 166.561415
+                    },
+                    "get_daily_forecast": {
+                        "rtt": 0.0030801652999798536,
+                        "energy": 166.25243500000002
+                    },
+                    "get_hourly_history": {
+                        "rtt": 0.007393369299825281,
+                        "energy": 167.80542733333334
+                    },
+                    "get_daily_history": {
+                        "rtt": 0.004790089299967803,
+                        "energy": 166.223744
+                    }
+                },
+                "pestanddisease": {
+                    "register_disease": {
+                        "rtt": 0.021204936599679057,
+                        "energy": 167.238964
+                    },
+                    "list_disease": {
+                        "rtt": 0.00814241599982779,
+                        "energy": 166.303196
+                    },
+                    "upload_data": {
+                        "rtt": 0.5488561415997537,
+                        "energy": 188.916118
+                    },
+                    "get_parcel_data": {
+                        "rtt": 0.0440655225997034,
+                        "energy": 169.410652
+                    },
+                    "calculate_gdd": {
+                        "rtt": 0.042969035799978884,
+                        "energy": 173.409736
+                    },
+                    "calculate_risk": {
+                        "rtt": 0.08617371619948244,
+                        "energy": 172.46514000000002
+                    },
+                    "fuzzy_risk_calculate": {
+                        "rtt": 0.1135048079999251,
+                        "energy": 165.90593600000003
+                    }
+                }
+            },
+            "high": {
+                "pestanddisease": {
+                    "register_disease": {
+                        "rtt": 0.0750128601921897,
+                        "energy": 214.82629799999998
+                    },
+                    "list_disease": {
+                        "rtt": 0.5569776128719677,
+                        "energy": 212.261764
+                    },
+                    "upload_data": {
+                        "rtt": 44.225299872360075,
+                        "energy": 218.75806849999998
+                    },
+                    "get_parcel_data": {
+                        "rtt": 2.077997006719961,
+                        "energy": 225.419898
+                    },
+                    "calculate_gdd": {
+                        "rtt": 2.778800041527749,
+                        "energy": 215.10143733333334
+                    },
+                    "calculate_risk": {
+                        "rtt": 11.347440056344087,
+                        "energy": 214.8450575
+                    },
+                    "fuzzy_risk_calculate": {
+                        "rtt": 8.215282323719933,
+                        "energy": 206.4598762857143
+                    }
+                },
+                "reporting": {
+                    "standalone_report": {
+                        "rtt": 36.85894316358389,
+                        "energy": 210.46612032258065
+                    },
+                    "irrigation_report": {
+                        "rtt": 23.805814066232124,
+                        "energy": 211.10382466666667
+                    },
+                    "fertilization_report": {
+                        "rtt": 24.116722402075915,
+                        "energy": 210.97855114285716
+                    },
+                    "pesticides_report": {
+                        "rtt": 22.47526785162008,
+                        "energy": 210.89408609999998
+                    },
+                    "animal_report": {
+                        "rtt": 29.32257858479589,
+                        "energy": 210.70785944
+                    },
+                    "compost_report": {
+                        "rtt": 31.41433248206794,
+                        "energy": 208.92412607407408
+                    }
+                },
+                "farmcalendar": {
+                    "register_farm": {
+                        "rtt": 0.05777429484001186,
+                        "energy": 218.72386
+                    },
+                    "register_parcel": {
+                        "rtt": 0.09903501163198962,
+                        "energy": 233.945539
+                    },
+                    "filter_parcels": {
+                        "rtt": 0.039157880048012884,
+                        "energy": 227.79610133333333
+                    },
+                    "register_activity_type": {
+                        "rtt": 0.03882621771196136,
+                        "energy": 235.510302
+                    },
+                    "register_gen_activity": {
+                        "rtt": 0.056817935638013295,
+                        "energy": 229.58561049999997
+                    },
+                    "register_obs": {
+                        "rtt": 0.048379677726024965,
+                        "energy": 228.123473
+                    },
+                    "monthly_activities": {
+                        "rtt": 5.968503729626676,
+                        "energy": 229.1295497142857
+                    },
+                    "get_activity": {
+                        "rtt": 2.124030164603349,
+                        "energy": 231.4556016
+                    },
+                    "register_crop": {
+                        "rtt": 0.07871552947602323,
+                        "energy": 217.856509
+                    }
+                },
+                "weather": {
+                    "list_locations": {
+                        "rtt": 0.0028696764280393837,
+                        "energy": 172.08995000000002
+                    },
+                    "get_locations_by_coord": {
+                        "rtt": 0.00284639116791368,
+                        "energy": 184.81109800000002
+                    },
+                    "add_locations": {
+                        "rtt": 0.0870312143038318,
+                        "energy": 176.54809
+                    },
+                    "get_hourly_forecast": {
+                        "rtt": 0.0052813321040812294,
+                        "energy": 177.70676500000002
+                    },
+                    "get_hourly_spray_forecast": {
+                        "rtt": 0.005398791375955625,
+                        "energy": 174.422749
+                    },
+                    "get_daily_forecast": {
+                        "rtt": 0.002145464288034418,
+                        "energy": 169.76156500000002
+                    },
+                    "get_hourly_history": {
+                        "rtt": 0.005979181908100145,
+                        "energy": 179.110417
+                    },
+                    "get_daily_history": {
+                        "rtt": 0.003841841443958401,
+                        "energy": 170.59507533333334
+                    }
+                },
+                "irrigation": {
+                    "upload_data": {
+                        "rtt": 86.35025582722398,
+                        "energy": 215.62234188095238
+                    },
+                    "list_datasets": {
+                        "rtt": 0.016636047879961553,
+                        "energy": 174.40730000000002
+                    },
+                    "eto_option_types": {
+                        "rtt": 0.004741212616150733,
+                        "energy": 210.284292
+                    },
+                    "get_dataset": {
+                        "rtt": 12.863245731533729,
+                        "energy": 211.2734694
+                    },
+                    "analyse_dataset": {
+                        "rtt": 2.1040808258998975,
+                        "energy": 217.31579399999998
+                    },
+                    "irrigation_datapoints": {
+                        "rtt": 2.1810688028996084,
+                        "energy": 197.274027
+                    },
+                    "delete_dataset": {
+                        "rtt": 0.03814412493314497,
+                        "energy": 171.639722
+                    }
+                }
+            }
+        },
+        "meta": {
+            "device_id": "Intel-S9200WK-112-cores-VM-32-CPU",
+            "iddle_energy": 165.8,
+            "max_energy": 209.94
+        }
+    },
+    "edge": {
+        "tasks": {
+            "medium": {
+                "weather": {
+                    "list_locations": {
+                        "rtt": 0.010530055255564245,
+                        "energy": 4.4215
+                    },
+                    "get_locations_by_coord": {
+                        "rtt": 0.01165359168884,
+                        "energy": 6.787000000000001
+                    },
+                    "add_locations": {
+                        "rtt": 2.2855099728666675,
+                        "energy": 9.930499999999999
+                    },
+                    "get_hourly_forecast": {
+                        "rtt": 0.024529787911104804,
+                        "energy": 6.914
+                    },
+                    "get_hourly_spray_forecast": {
+                        "rtt": 0.023417265266652977,
+                        "energy": 5.3525
+                    },
+                    "get_daily_forecast": {
+                        "rtt": 0.00767452997775864,
+                        "energy": 4.793
+                    },
+                    "get_hourly_history": {
+                        "rtt": 0.024211777055552375,
+                        "energy": 6.582999999999999
+                    },
+                    "get_daily_history": {
+                        "rtt": 0.013543062599996523,
+                        "energy": 4.6370000000000005
+                    }
+                },
+                "pestanddisease": {
+                    "register_disease": {
+                        "rtt": 0.17962320891111733,
+                        "energy": 16.064
+                    },
+                    "list_disease": {
+                        "rtt": 0.26868904362220036,
+                        "energy": 9.551
+                    },
+                    "upload_data": {
+                        "rtt": 60.91641988235552,
+                        "energy": 14.124790697674419
+                    },
+                    "get_parcel_data": {
+                        "rtt": 3.192795781866668,
+                        "energy": 13.091
+                    },
+                    "calculate_gdd": {
+                        "rtt": 5.04253969991113,
+                        "energy": 14.0265
+                    },
+                    "calculate_risk": {
+                        "rtt": 13.08292046291111,
+                        "energy": 13.305888888888889
+                    },
+                    "fuzzy_risk_calculate": {
+                        "rtt": 12.46490246602223,
+                        "energy": 12.87411111111111
+                    }
+                },
+                "irrigation": {
+                    "upload_data": {
+                        "rtt": 81.43145105262671,
+                        "energy": 17.21511111111111
+                    },
+                    "list_datasets": {
+                        "rtt": 0.0377413300800193,
+                        "energy": 14.212
+                    },
+                    "get_dataset": {
+                        "rtt": 26.887066825466658,
+                        "energy": 12.602235294117648
+                    },
+                    "analyse_dataset": {
+                        "rtt": 5.545115546200032,
+                        "energy": 13.263333333333332
+                    },
+                    "irrigation_datapoints": {
+                        "rtt": 5.657873481866682,
+                        "energy": 12.759666666666668
+                    },
+                    "delete_dataset": {
+                        "rtt": 0.03639990119994157,
+                        "energy": 2.009
+                    }
+                },
+                "farmcalendar": {
+                    "register_farm": {
+                        "rtt": 0.17309138037776897,
+                        "energy": 20.750999999999998
+                    },
+                    "register_parcel": {
+                        "rtt": 0.41269473568887505,
+                        "energy": 19.588
+                    },
+                    "filter_parcels": {
+                        "rtt": 0.8194024771222455,
+                        "energy": 18.4995
+                    },
+                    "register_activity_type": {
+                        "rtt": 0.09614723702225092,
+                        "energy": 21.443
+                    },
+                    "register_gen_activity": {
+                        "rtt": 0.3233150182277844,
+                        "energy": 21.676333333333332
+                    },
+                    "register_obs": {
+                        "rtt": 0.5874437141055372,
+                        "energy": 21.586333333333336
+                    },
+                    "monthly_activities": {
+                        "rtt": 3.914165562566668,
+                        "energy": 19.012833333333333
+                    },
+                    "get_activity": {
+                        "rtt": 9.86770522397998,
+                        "energy": 16.99233333333333
+                    },
+                    "register_crop": {
+                        "rtt": 0.17686430758887278,
+                        "energy": 22.0
+                    }
+                },
+                "reporting": {
+                    "standalone_report": {
+                        "rtt": 23.766954321400164,
+                        "energy": 16.810352058181817
+                    },
+                    "irrigation_report": {
+                        "rtt": 14.614291778566834,
+                        "energy": 16.815075611428572
+                    },
+                    "fertilization_report": {
+                        "rtt": 14.922013964800165,
+                        "energy": 16.811998422857144
+                    },
+                    "pesticides_report": {
+                        "rtt": 13.56612130386684,
+                        "energy": 16.826779017142858
+                    },
+                    "animal_report": {
+                        "rtt": 18.556877217349694,
+                        "energy": 16.81054110222222
+                    },
+                    "compost_report": {
+                        "rtt": 20.034242831266663,
+                        "energy": 16.81850592
+                    }
+                }
+            },
+            "high": {
+                "pestanddisease": {
+                    "register_disease": {
+                        "rtt": 2.5945403444080437,
+                        "energy": 17.9465
+                    },
+                    "list_disease": {
+                        "rtt": 7.375811702775994,
+                        "energy": 13.6545
+                    },
+                    "upload_data": {
+                        "rtt": 212.59322990022395,
+                        "energy": 14.319113821138211
+                    },
+                    "get_parcel_data": {
+                        "rtt": 11.630344310711967,
+                        "energy": 13.606
+                    },
+                    "calculate_gdd": {
+                        "rtt": 15.226886325591986,
+                        "energy": 14.33
+                    },
+                    "calculate_risk": {
+                        "rtt": 38.36580865336802,
+                        "energy": 13.1692
+                    },
+                    "fuzzy_risk_calculate": {
+                        "rtt": 39.257489563407965,
+                        "energy": 13.02525925925926
+                    }
+                },
+                "farmcalendar": {
+                    "register_farm": {
+                        "rtt": 1.380622642592025,
+                        "energy": 20.772000000000002
+                    },
+                    "register_parcel": {
+                        "rtt": 3.657484509115995,
+                        "energy": 19.486333333333334
+                    },
+                    "filter_parcels": {
+                        "rtt": 7.362575910203985,
+                        "energy": 16.767555555555553
+                    },
+                    "register_activity_type": {
+                        "rtt": 0.8334616476560114,
+                        "energy": 21.6105
+                    },
+                    "register_gen_activity": {
+                        "rtt": 5.205619131237976,
+                        "energy": 21.08588888888889
+                    },
+                    "register_obs": {
+                        "rtt": 6.478725590693988,
+                        "energy": 19.68881818181818
+                    },
+                    "monthly_activities": {
+                        "rtt": 10.348408006620014,
+                        "energy": 18.333083333333335
+                    },
+                    "get_activity": {
+                        "rtt": 23.140443281389988,
+                        "energy": 16.853235294117646
+                    },
+                    "register_crop": {
+                        "rtt": 2.7342561657680235,
+                        "energy": 17.1666
+                    }
+                },
+                "weather": {
+                    "list_locations": {
+                        "rtt": 0.010439315164021537,
+                        "energy": 6.142
+                    },
+                    "get_locations_by_coord": {
+                        "rtt": 0.01036543473599886,
+                        "energy": 10.049
+                    },
+                    "add_locations": {
+                        "rtt": 2.3118405626319873,
+                        "energy": 12.2545
+                    },
+                    "get_hourly_forecast": {
+                        "rtt": 0.11795551699999851,
+                        "energy": 12.775
+                    },
+                    "get_hourly_spray_forecast": {
+                        "rtt": 0.38904607642802147,
+                        "energy": 9.454
+                    },
+                    "get_daily_forecast": {
+                        "rtt": 0.008062179631964681,
+                        "energy": 8.9895
+                    },
+                    "get_hourly_history": {
+                        "rtt": 0.33244111056398834,
+                        "energy": 12.2085
+                    },
+                    "get_daily_history": {
+                        "rtt": 0.01425652321601956,
+                        "energy": 7.173000000000001
+                    }
+                },
+                "irrigation": {
+                    "upload_data": {
+                        "rtt": 118.60437966399334,
+                        "energy": 17.433408759124084
+                    },
+                    "list_datasets": {
+                        "rtt": 0.3473408178733371,
+                        "energy": 15.869499999999999
+                    },
+                    "get_dataset": {
+                        "rtt": 37.84647843576,
+                        "energy": 12.373
+                    },
+                    "analyse_dataset": {
+                        "rtt": 7.161409854159938,
+                        "energy": 13.190750000000001
+                    },
+                    "irrigation_datapoints": {
+                        "rtt": 7.334121423759971,
+                        "energy": 13.2254
+                    },
+                    "delete_dataset": {
+                        "rtt": 0.5557179720401473,
+                        "energy": 2.132
+                    }
+                },
+                "reporting": {
+                    "standalone_report": {
+                        "rtt": 55.28841474537583,
+                        "energy": 16.837289625806452
+                    },
+                    "irrigation_report": {
+                        "rtt": 35.70872109934818,
+                        "energy": 16.888305973333335
+                    },
+                    "fertilization_report": {
+                        "rtt": 36.175083603113876,
+                        "energy": 16.878284091428572
+                    },
+                    "pesticides_report": {
+                        "rtt": 33.71290177743012,
+                        "energy": 16.871526887999998
+                    },
+                    "animal_report": {
+                        "rtt": 43.98386787719384,
+                        "energy": 16.8566287552
+                    },
+                    "compost_report": {
+                        "rtt": 47.12149872310191,
+                        "energy": 16.713930085925927
+                    }
+                }
+            },
+            "low": {
+                "irrigation": {
+                    "upload_data": {
+                        "rtt": 48.4177118656,
+                        "energy": 17.443640000000002
+                    },
+                    "list_datasets": {
+                        "rtt": 0.023093460600011894,
+                        "energy": 4.864
+                    },
+                    "get_dataset": {
+                        "rtt": 8.70499352500001,
+                        "energy": 11.5305
+                    },
+                    "analyse_dataset": {
+                        "rtt": 0.36948453459999653,
+                        "energy": 9.537
+                    },
+                    "irrigation_datapoints": {
+                        "rtt": 0.3521964745999867,
+                        "energy": 8.17
+                    },
+                    "delete_dataset": {
+                        "rtt": 0.04133154440000908,
+                        "energy": 2.8449999999999998
+                    }
+                },
+                "pestanddisease": {
+                    "register_disease": {
+                        "rtt": 0.04739940339991335,
+                        "energy": 3.939
+                    },
+                    "list_disease": {
+                        "rtt": 0.0231162812000548,
+                        "energy": 2.349
+                    },
+                    "upload_data": {
+                        "rtt": 7.005983784000091,
+                        "energy": 13.2104
+                    },
+                    "get_parcel_data": {
+                        "rtt": 0.12887969219996193,
+                        "energy": 6.056
+                    },
+                    "calculate_gdd": {
+                        "rtt": 0.17077583280006364,
+                        "energy": 5.6370000000000005
+                    },
+                    "calculate_risk": {
+                        "rtt": 0.41941092600000046,
+                        "energy": 10.668000000000001
+                    },
+                    "fuzzy_risk_calculate": {
+                        "rtt": 0.389641312599997,
+                        "energy": 2.015
+                    }
+                },
+                "farmcalendar": {
+                    "register_farm": {
+                        "rtt": 0.07450780060000853,
+                        "energy": 4.349
+                    },
+                    "register_parcel": {
+                        "rtt": 0.0853393188999803,
+                        "energy": 3.9325
+                    },
+                    "filter_parcels": {
+                        "rtt": 0.08291766740001094,
+                        "energy": 4.068
+                    },
+                    "register_activity_type": {
+                        "rtt": 0.06249264979996951,
+                        "energy": 4.885
+                    },
+                    "register_gen_activity": {
+                        "rtt": 0.07891327145001129,
+                        "energy": 3.9294
+                    },
+                    "register_obs": {
+                        "rtt": 0.13739984339999295,
+                        "energy": 3.9186
+                    },
+                    "monthly_activities": {
+                        "rtt": 0.1402864913999906,
+                        "energy": 4.269
+                    },
+                    "get_activity": {
+                        "rtt": 0.17260950069999126,
+                        "energy": 5.412000000000001
+                    },
+                    "register_crop": {
+                        "rtt": 0.0745316005999939,
+                        "energy": 3.152
+                    }
+                },
+                "weather": {
+                    "list_locations": {
+                        "rtt": 0.010945368799991684,
+                        "energy": 2.2106666666666666
+                    },
+                    "get_locations_by_coord": {
+                        "rtt": 0.010959168700003375,
+                        "energy": 6.2444999999999995
+                    },
+                    "add_locations": {
+                        "rtt": 0.3008341178000137,
+                        "energy": 5.483
+                    },
+                    "get_hourly_forecast": {
+                        "rtt": 0.0210150128000123,
+                        "energy": 2.489
+                    },
+                    "get_hourly_spray_forecast": {
+                        "rtt": 0.023798994499986747,
+                        "energy": 2.5296666666666665
+                    },
+                    "get_daily_forecast": {
+                        "rtt": 0.009077379800010022,
+                        "energy": 2.266
+                    },
+                    "get_hourly_history": {
+                        "rtt": 0.02816878669999596,
+                        "energy": 2.707
+                    },
+                    "get_daily_history": {
+                        "rtt": 0.01589545750001662,
+                        "energy": 2.378
+                    }
+                },
+                "reporting": {
+                    "standalone_report": {
+                        "rtt": 0.3848554451998098,
+                        "energy": 14.9828116
+                    },
+                    "irrigation_report": {
+                        "rtt": 0.27254805165021023,
+                        "energy": 14.476378666666667
+                    },
+                    "fertilization_report": {
+                        "rtt": 0.261231284850328,
+                        "energy": 14.453131600000003
+                    },
+                    "pesticides_report": {
+                        "rtt": 0.2614309507499456,
+                        "energy": 14.68566112
+                    },
+                    "animal_report": {
+                        "rtt": 0.3174000848995092,
+                        "energy": 14.720031466666667
+                    },
+                    "compost_report": {
+                        "rtt": 0.3342153319498721,
+                        "energy": 14.045631120000001
+                    }
+                }
+            }
+        },
+        "meta": {
+            "device_id": "RaspberryPi4-8gb",
+            "iddle_energy": 2,
+            "max_energy": 12
+        }
+    }
+}
